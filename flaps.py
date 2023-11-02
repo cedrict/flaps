@@ -19,7 +19,7 @@ from viscosity import *
 from analytical_solution import *
 from gravity_vector import *
 from compute_gravity_at_point import *
-from compute_strain_rate2 import *
+#from compute_strain_rate2 import *
 from export_to_vtu import *
 
 ###############################################################################
@@ -30,7 +30,7 @@ surface_free_slip=True
 
 bottom_free_slip=True # not yet implemented
 
-solve_stokes=False
+solve_stokes=True
 
 use_elemental_density=False
 use_elemental_viscosity=False
@@ -94,7 +94,7 @@ if int(len(sys.argv) == 14):
    xi          = int(sys.argv[6])
    etablobstar = float(sys.argv[7])
    rhoblobstar = float(sys.argv[8])
-   yblob       = float(sys.argv[9])
+   zblob       = float(sys.argv[9])
    Rblob       = float(sys.argv[10])
    etalithstar = float(sys.argv[11])
    compute_g   = int(sys.argv[12])
@@ -120,20 +120,23 @@ else:
    # exp=2: blob
    # exp=3: pancake pi/8
    exp         = 1
-   nelr        = 32 # Q1 cells!
+   nelr        = 64 # Q1 cells!
    visu        = 1
    nqperdim    = 3
    mapping     = 'Q2' 
    xi          = 6
    etablobstar = 1
    rhoblobstar = 0.9
-   yblob       = 4900e3
+   zblob       = 4900e3
    Rblob       = 400e3
    etalithstar = 1
    compute_gravity=False
    nel_phi     = 500
 
-dt=250*year
+gravity_model=2
+rho_c=6000
+
+dt=50*year
 np_grav=48 # nb of satellites positions
 height=250e3
 
@@ -584,7 +587,7 @@ print('  eta_model=',eta_model)
 print('  rho_model=',rho_model)
 print('  rhoblob=',rhoblob)
 print('  Rblob=',Rblob)
-print('  yblob=',yblob)
+print('  zblob=',zblob)
 print('  compute_gravity=',compute_gravity)
 print('  nel_phi=',nel_phi)
 
@@ -1097,7 +1100,7 @@ for istep in range(0,nstep):
        for iel in range(0,nel):
            viscosity_elemental[iel]=viscosity(xc[iel],yc[iel],R1,R2,eta_m,eta_model)
            density_elemental[iel]=density(xc[iel],yc[iel],R1,R2,kk,rho_m,rho_model,\
-                                          exp,rhoblobstar,yblob,Rblob)
+                                          exp,rhoblobstar,zblob,Rblob)
            for i in range(0,mV):
                counter[iconV[i,iel]]+=1
                viscosity_nodal[iconV[i,iel]]+=viscosity_elemental[iel]
@@ -1156,7 +1159,7 @@ for istep in range(0,nstep):
                rhoq[counterq]=density_elemental[iel]
             else:
                rhoq[counterq]=density(xq,yq,R1,R2,kk,rho_m,rho_model,\
-                                      exp,rhoblobstar,yblob,Rblob)
+                                      exp,rhoblobstar,zblob,Rblob)
 
             if use_elemental_viscosity:
                etaq[counterq]=viscosity_elemental[iel]
@@ -1282,7 +1285,7 @@ for istep in range(0,nstep):
             G_el-=b_mat.T.dot(N_mat)*coeffq
 
             g_x,g_y=gravity_acceleration(xq,yq,R1,R2,gravity_model,g0,rho_m,\
-                                         rhoc,rhoblob,Rblob,yblob)
+                                         rhoc,rhoblob,Rblob,zblob)
             for i in range(0,mV):
                 f_el[ndofV*i  ]+=NNNV[i]*coeffq*g_x*rhoq[counterq]
                 f_el[ndofV*i+1]+=NNNV[i]*coeffq*g_y*rhoq[counterq]
@@ -2011,7 +2014,8 @@ for istep in range(0,nstep):
                                 density_elemental,surface_element,cmb_element,iconV)
        export_solutionQ1_to_vtu(istep,exp,NV,nel,xV,yV,vel_unit,u,v,vr,vt,rad,theta,\
                                 exx2,eyy2,exy2,sr2,e_rr2,e_tt2,e_rt2,q,viscosity_nodal,\
-                                density_nodal,iconQ1,g0,R1,R2,kk,rho_m)
+                                density_nodal,iconQ1,g0,R1,R2,kk,rho_m,gravity_model,\
+                                rhoblob,Rblob,zblob,rho_c)
 
     print("export to vtu file (%.3fs)" % (timing.time() - start))
 

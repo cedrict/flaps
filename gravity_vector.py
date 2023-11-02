@@ -1,6 +1,8 @@
 from numba import jit
 import numpy as np
 
+Ggrav=6.67430e-11
+
 @jit(nopython=True)
 def gx(x,y,g0):
     val= -x/np.sqrt(x*x+y*y)*g0
@@ -30,6 +32,7 @@ def gravity_acceleration(x,z,R1,R2,gravity_model,g0,rhom,rhoc,rhoblob,Rblob,zblo
           gr=rhom/3*r+C/r**2
        else:
           gr=E/r**2
+       gr*=4*np.pi*Ggrav
        gx=-x/r*gr
        gz=-z/r*gr
 
@@ -43,19 +46,24 @@ def gravity_acceleration(x,z,R1,R2,gravity_model,g0,rhom,rhoc,rhoblob,Rblob,zblo
           gr=rhom/3*r+C/r**2
        else:
           gr=E/r**2
-       coeff=4*np.pi*Ggrav
-       gx=-x/r*gr*coeff
-       gz=-z/r*gr*coeff
+       gr*=4*np.pi*Ggrav
+       gx=-x/r*gr
+       gz=-z/r*gr
 
-       Mblob=4*np.pi/3*rhoblob*Rblob**3
+       gx=0
+       gz=0
+       
+       drho=rhom-rhoblob
+       Mblob=4*np.pi/3*drho*Rblob**3
        dist=np.sqrt(x**2+(z-zblob)**2)
-       if dist<Rblob:
-          gr=coeff*rhoblob*dist/3
-       else:
-          gr=Ggrav*Mblob/dist**2
+       if dist>1:
+          if dist<=Rblob:
+             gr=4*np.pi*Ggrav*drho*dist/3
+          else:
+             gr=Ggrav*Mblob/dist**2
+          gx=-x/dist*gr
+          gz=-(z-zblob)/dist*gr
 
-       gx+=-x/dist*gr
-       gz+=-(z-zblob)/dist*gr
 
     #---------------------------------
     elif gravity_model==3: # prem
