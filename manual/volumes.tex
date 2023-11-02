@@ -1,0 +1,25 @@
+
+Here we simply compute 
+\[
+{\cal V} = \sum_e \int_{\Omega_e} 2\pi x dV
+\]
+where the sum runs over all elements of the domain.
+We of course have 
+\[
+{\cal V}_{analytical} = \frac43 \pi (R_2^3-R_1^3)
+\]
+so that we can compute the relative errors as a function of resolution, mapping and quadrature: 
+\begin{center}
+\includegraphics[width=12cm]{RESULTS/vols/volumes.pdf}
+\end{center}
+
+\noindent Conclusions:
+\begin{itemize}
+\item unsurprisingly $Q_1$ mapping yields the worst results
+\item mapping is the controling factor, much more than quadrature
+\item for the isoparametric element (mapping $Q_2$) the number of quadrature points 
+is not critical. Results are virtually identical for {\python nqperdim=2,3,4,5}
+\item $Q_3$ about one order of magnitude more accurate than $Q_2$ 
+\item $Q_4$ mapping 3-4 orders of magnitude more accurate than $Q_2$ mapping
+\end{itemize}
+

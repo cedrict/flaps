@@ -6,7 +6,7 @@ set key outside
 Ggrav=6.67e-11
 R1=3400e3
 R2=6400e3
-rhoc=6000*4*pi*Ggrav *0
+rhoc=6000*4*pi*Ggrav 
 rhom=4000*4*pi*Ggrav
 
 C=R1**3/3*(rhoc-rhom)

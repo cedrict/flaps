@@ -9,6 +9,7 @@
 \usepackage{bm}
 \usepackage{listings}
 \usepackage{tikz}
+\usepackage{siunitx}
 
 \lstset{ 
   language=Python,
@@ -52,9 +53,18 @@
 \newpage
 \section{The physics}
 
+
+%----------------------------------------------------------
+\subsection{About the gravity field}
+\input{gravity}
+
 %----------------------------------------------------------
 \subsection{Axisymmetric formulation}
 \input{axisymmetry}
+
+%----------------------------------------------------------
+\subsection{Tensors from Cartesian to Spherical coordinates}
+\input{tensors}
 
 %----------------------------------------------------------
 \subsection{Dynamic topography}
@@ -75,10 +85,9 @@
 %----------------------------------------------------------
 \subsection{Quadrature}
 
-
-
 %----------------------------------------------------------
 \subsection{Computing normals}
+\input{normals}
 
 %----------------------------------------------------------
 \subsection{Free slip}
@@ -87,9 +96,6 @@
 %----------------------------------------------------------
 \subsection{Pressure normalisation}
 \input{pressure_normalisation}
-
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
@@ -121,6 +127,7 @@ Concretely, in this section we will explore the effect of:
 and we will monitor the computed area/volume, the root mean square velocity and the velocity and pressure errors.
 
 \subsection{Computing volume/mass}
+\input{volumes}
 
 
 \subsection{Annulus convection manufactured solution}
