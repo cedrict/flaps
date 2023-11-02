@@ -1,0 +1,129 @@
+\documentclass[a4paper]{article}
+\usepackage[cm]{fullpage}
+\usepackage{url}
+
+\bibliographystyle{plain} % We choose the "plain" reference style
+
+\begin{document}
+\title{FLAPS \\ the FLexible Axisymmetric Planet Solver}
+\author{C. Thieulot}
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The physics}
+
+%----------------------------------------------------------
+\subsection{Axisymmetric formulation}
+
+%----------------------------------------------------------
+\subsection{Dynamic topography}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Numerical methods}
+
+%----------------------------------------------------------
+\subsection{Finite elements}
+
+%----------------------------------------------------------
+\subsection{Mapping}
+
+%----------------------------------------------------------
+\subsection{Quadrature}
+
+%----------------------------------------------------------
+\subsection{Computing normals}
+
+%----------------------------------------------------------
+\subsection{Free slip}
+
+%----------------------------------------------------------
+\subsection{Pressure normalisation}
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The data}
+
+%----------------------------------------------------------
+\subsection{Earth}
+\input{data_earth}
+
+%----------------------------------------------------------
+\subsection{Mars}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Benchmarking}
+
+\subsection{Computing volume/mass}
+
+
+\subsection{Annulus convection manufactured solution}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The '4D dynamic earth' inter-code benchmark}
+
+\cite{krhb12}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\appendix
+\section{Misc}
+
+%----------------------------------------------------------
+\subsection{Notes to self}
+
+What I have tried to cure the pb of the weird anomalies at the poles.
+
+\begin{itemize}
+\item turning elements into real trapezes. Made things worse
+\item different mappings. not much difference
+\item when using blob, reduced densities. no difference
+\item nb of quad points, no real difference
+\item nb of elements in tangential direction, some difference but no cure 
+\item when using blob, drho/rho, no diff 
+\item type of b.c. at point corner below poles, no real diff 
+\item scaling of G matrix
+\item different rotations/bc for free slip, no difference
+\item using cmat matrix for dev strain rate, helped a little bit, no cure 
+\end{itemize}
+
+
+
+%----------------------------------------------------------
+\subsection{To do list}
+\begin{itemize}
+\item visc profiles
+\item rho profiles
+\item time stepping
+\item gravity calculations. import from f96, re-benchmark
+\item CBF? 
+\item compute self gravity for reduced density case 
+\item export exx1 and exx3 to outside function, clean their code too? 
+\item remove call to math 
+\item bottom free slip 
+\item change y for z in stone
+\item use PREM gravity value
+\item aspect with GMG ?
+\item compute moment of inertia
+\item by default code now uses elemental rho and eta. it changes things wrt exp0 benchmark results!
+\end{itemize}
+
+
+
+
+\bibliography{bibliography} 
+
+\end{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
