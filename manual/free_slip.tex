@@ -1,0 +1,41 @@
+
+
+Finally free slip boundary conditions have been implemented, but only at the 
+surface, and only with the method of Lagrange Multipliers (\stone~\ref{f151}
+taught us that it works as well as the other method).  
+{\color{red} change}
+
+\begin{eqnarray}
+\K_e \cdot \vec{\cal V} + \G_e \cdot \vec{\cal P} &=& \vec{f}  \\
+\G_e \cdot \vec{\cal V} &=& \vec{0}
+\end{eqnarray}
+We multiply the first line by the rotation matrix ${\bm R}$:
+\begin{eqnarray}
+{\bm R} \cdot \K_e \cdot \vec{\cal V} +{\bm R} \cdot \G_e \cdot \vec{\cal P} &=&{\bm R} \cdot \vec{f}  \\
+\G_e \cdot \vec{\cal V} &=& \vec{0}
+\end{eqnarray}
+and then introduce the identity matrix ${\bm I}={\bm R}^T\cdot {\bm R}$ before the velocity vector:
+\begin{eqnarray}
+{\bm R} \cdot \K_e \cdot {\bm R}^T\cdot {\bm R} \cdot  \vec{\cal V} +{\bm R} \cdot \G_e \cdot \vec{\cal P} &=&{\bm R} \cdot \vec{f}  \\
+\G_e \cdot  {\bm R}^T\cdot {\bm R} \cdot  \vec{\cal V} &=& \vec{0}
+\end{eqnarray}
+The second line can also be written
+\begin{eqnarray}
+({\bm R} \cdot \K_e \cdot {\bm R}^T) \cdot ({\bm R} \cdot  \vec{\cal V}) + ({\bm R} \cdot \G_e) \cdot \vec{\cal P} &=&{\bm R} \cdot \vec{f}  \\
+( {\bm R} \cdot \G_e)^T \cdot  ({\bm R} \cdot  \vec{\cal V}) &=& \vec{0}
+\end{eqnarray}
+which translates at the elemental level into
+\begin{lstlisting}
+K_el=RotMat.dot(K_el.dot(RotMat.T))
+f_el=RotMat.dot(f_el)
+G_el=RotMat.dot(G_el)
+\end{lstlisting}
+Note that the matrix $\K_e$ is $(m*ndofV)\times (m*ndofV)$ in size, and so is the matrix ${\bm R}$.
+
+After boundary conditions are imposed, the system is rotated back:
+
+\begin{lstlisting}
+K_el=RotMat.T.dot(K_el.dot(RotMat))
+f_el=RotMat.T.dot(f_el)
+G_el=RotMat.T.dot(G_el)
+\end{lstlisting}

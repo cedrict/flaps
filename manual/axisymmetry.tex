@@ -1,0 +1,40 @@
+
+
+We here rely on axisymmetric cylindrical coordinates, see Section~\ref{MMM-ss:axicyleqs}.
+As shown on the following figure we assume that the deformation/flow is independent of the angle 
+$\theta$ so that the remaining space coordinates are $r$ and $z$.
+\begin{center}
+\input{tikz/tikz_axi}
+\end{center}
+
+Given the symmetry of the problem any term containing $\partial_\theta$ or $\upnu_\theta$ is zero.
+The strain rate tensor given in Section~\ref{MMM-ss:srcc} then simplifies to:
+
+\begin{eqnarray}
+\dot\varepsilon_{rr} 
+&=& \frac{\partial \upnu_r}{\partial r} \nn\\
+\dot\varepsilon_{\theta\theta}  &=& \frac{\upnu_r}{r} \nn\\
+\dot\varepsilon_{\theta r} = \dot\varepsilon_{r\theta}  &=& 0 \nn\\
+\dot\varepsilon_{zz} &=& \frac{\partial \upnu_z}{\partial z} \nn\\
+\dot{\varepsilon}_{rz} = \dot{\varepsilon}_{zr} 
+&=& \frac{1}{2}\left( \frac{\partial \upnu_r}{\partial z} + \frac{\partial \upnu_z}{\partial r} \right) \nn\\
+\dot{\varepsilon}_{\theta z} = \dot{\varepsilon}_{z \theta} &=& 0 \nn
+\end{eqnarray}
+Note that the term $\dot\varepsilon_{\theta\theta} $ is not zero!
+The deviatoric stress tensor ${\bm \tau}=2\eta \dot{\bm \varepsilon}$ can be computed
+as well as the full stress tensor ${\bm \sigma}=-p {\bm 1} + {\bm \tau}$. 
+
+
+In cylindrical coordinates, and in the axisymmetric case
+the strain rate tensor is given by
+\[
+\dot{\bm\varepsilon}(\vec\upnu)
+=
+\left(
+\begin{array}{ccc}
+\dot\varepsilon_{rr} & 0 & \dot{\varepsilon}_{rz} \\
+0 & \dot{\varepsilon}_{\theta\theta}  & 0 \\
+\dot{\varepsilon}_{zr} & 0 & \dot\varepsilon_{zz}
+\end{array}
+\right)
+\]
