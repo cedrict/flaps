@@ -1,0 +1,49 @@
+
+
+Looking at the ASPECT manual, we find:
+
+``we evaluate the stress and evaluate the component of it in the direction in which 
+gravity acts. In other words we compute 
+\[
+\sigma_{rr}={\hat g}^T (2 \eta \varepsilon(\mathbf u)
+- \frac 13 (\textrm{div}\;\mathbf u)I)\hat g - p_d
+\] 
+where 
+$\hat g = \mathbf g/\|\mathbf g\|$ is the direction of 
+the gravity vector $\mathbf g$ and $p_d=p-p_a$ is the dynamic 
+pressure computed by subtracting the adiabatic pressure $p_a$ 
+from the total pressure $p$ computed as part of the Stokes 
+solve. From this, the dynamic 
+topography is computed using the formula 
+\[
+h=\frac{\sigma_{rr}}{(\mathbf g \cdot \mathbf n)  \rho}
+\] 
+where $\rho$ is the density. For the bottom surface we chose the convection 
+that positive values are up (out) and negative values are in (down), analogous to 
+the deformation of the upper surface. 
+The file format then consists of lines with Euclidean coordinates 
+followed by the corresponding topography value.''
+
+Here the viscosity is constant in the domain, the flow 
+is incompressible and $\vec{g}= -g_0 \vec{e}_r$ so we can compute the 
+dynamic topography as follows:
+\[
+h = - \frac{-p + 2 \eta_0 \dot{\varepsilon}_{rr} }{\rho_0 g_0}
+\]
+This is of course valid if what is above the surface is a fluid with zero density.
+This translates into:
+
+\begin{lstlisting}
+dyn_topo=np.zeros(NV,dtype=np.float64)
+for i in range(0,NV):
+    if surfaceV[i] and xV[i]>=0:
+       dyn_topo[i]= -(2*viscosity*e_rr[i]-q[i])/(rho0*g0) 
+\end{lstlisting}
+
+Note that in our case $\rho_0=1$ and $g_0=1$ so that in fact the dynamic topography 
+is simply $-\sigma_{rr}$.
+
+
+
+
+
