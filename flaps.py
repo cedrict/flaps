@@ -19,13 +19,15 @@ from viscosity import *
 from analytical_solution import *
 from gravity_vector import *
 from compute_gravity_at_point import *
-#from compute_strain_rate2 import *
+from compute_strain_rate2 import *
 from export_to_vtu import *
 from quadrature_setup import *
 from compute_normals import *
 from define_mapping import *
 from compute_element_center_coords import *
 from compute_rho_eta_fields import *
+from compute_errors import *
+from project_pressure_on_Q2 import *
 
 ###############################################################################
 
@@ -75,13 +77,17 @@ planet_is_4DEarth=False
 
 ###############################################################################
 
+spacing="                                                 "
+
 year=365.25*3600*24
 Ggrav=6.67430e-11
 mGal=1e-5
 
-print("+----------------------------------------")
-print("+--------------FL.A.P.S------------------")
-print("+----------------------------------------")
+print("+=================================================")
+print("+=================================================")
+print("+---------------------FL.A.P.S--------------------")
+print("+=================================================")
+print("+=================================================")
 
 ndim=2   # number of dimensions
 mV=9     # number of nodes making up an element
@@ -89,7 +95,6 @@ mP=4     # number of nodes making up an element
 ndofV=2  # number of velocity degrees of freedom per node
 ndofP=1  # number of pressure degrees of freedom 
 
-stop_here=False
 if int(len(sys.argv) == 14):
    exp         = int(sys.argv[1])
    nelr        = int(sys.argv[2])
@@ -110,22 +115,15 @@ if int(len(sys.argv) == 14):
    if mapping==4: mapping='Q4'
    if mapping==5: mapping='Q5'
    if mapping==6: mapping='Q6'
-
    compute_gravity=(compute_g==1)
-
-   if exp==-1:
-      exp=1
-      stop_here=True
-
    print(sys.argv)
 
 else:
    # exp=0: cyl benchmark
    # exp=1: aquarium
    # exp=2: blob
-   # exp=3: pancake pi/8
    exp         = 1
-   nelr        = 32 # Q1 cells!
+   nelr        = 128 # Q1 cells!
    visu        = 1
    nqperdim    = 3
    mapping     = 'Q2' 
@@ -136,7 +134,7 @@ else:
    Rblob       = 400e3
    etalithstar = 1
    compute_gravity=False
-   nel_phi     = 500
+   nel_phi     = 100
 
 gravity_model=2
 rho_c=6000
@@ -308,7 +306,7 @@ if planet_is_Earth:
       depth_prem= np.empty(44,dtype=np.float64)
       g_prem = np.empty(44,dtype=np.float64)
 
-print("read EARTH data                 (%.3fs)" % (timing.time() - start))
+print("read EARTH data...........................(%.3fs)" % (timing.time() - start))
 
 ###############################################################################
 ###############################################################################
@@ -343,7 +341,7 @@ if planet_is_Mars:
       R_disc4 = 1822.5068139999998e3
       eta_max=1e25
 
-print("read MARS data                  (%.3fs)" % (timing.time() - start))
+print("read MARS data............................(%.3fs)" % (timing.time() - start))
 
 ###############################################################################
 ###############################################################################
@@ -362,7 +360,7 @@ start = timing.time()
 
 nqel,qcoords_r,qcoords_s,qweights=quadrature_setup(nqperdim)
 
-print("quadrature setup                (%.3fs)" % (timing.time() - start))
+print("quadrature setup..........................(%.3fs)" % (timing.time() - start))
 
 ###############################################################################
 # grid point setup
@@ -455,7 +453,7 @@ else:
    if debug:
       np.savetxt('grid.ascii',np.array([xV,yV,theta]).T,header='# x,y')
 
-print("coordinate arrays               (%.3fs)" % (timing.time() - start))
+print("coordinate arrays.........................(%.3fs)" % (timing.time() - start))
 
 ###############################################################################
 # build iconQ1 array 
@@ -497,7 +495,7 @@ else:
 
 if debug: export_Q1_mesh_to_vtu(NV,nel,xV,yV,iconQ1)
 
-print("build iconQ1                    (%.3fs)" % (timing.time() - start))
+print("build iconQ1..............................(%.3fs)" % (timing.time() - start))
 
 ###############################################################################
 # now that the grid has been built as if it was a Q1 grid, 
@@ -522,12 +520,8 @@ Nfem=NfemV+NfemP # total number of dofs
 h_r=(R2-R1)/nelr # radial resolution
 
 print('  -------------------')
-print('  nelr=',nelr)
-print('  nelt=',nelt)
-print('  nel=',nel)
-print('  NfemV=',NfemV)
-print('  NfemP=',NfemP)
-print('  Nfem=',Nfem)
+print('  nelr=',nelr,' ; nelt=',nelt,' ; nel=',nel)
+print('  NfemV=',NfemV,' ; NfemP=',NfemP, '; Nfem=',Nfem)
 print('  nqel=',nqel)
 print('  mapping=',mapping)
 print('  axisymmetric=',axisymmetric)
@@ -543,7 +537,7 @@ print('  nel_phi=',nel_phi)
 print('  h_r=',h_r)
 print('  -------------------')
 
-print("compute nekr,nelt,nel...        (%.3fs)" % (timing.time() - start))
+print("compute nelr,nelt,nel.....................(%.3fs)" % (timing.time() - start))
 
 ###############################################################################
 # connectivity
@@ -623,7 +617,7 @@ else:
        #end for
    #end for
 
-print("connectivity array              (%.3fs)" % (timing.time() - start))
+print("connectivity array........................(%.3fs)" % (timing.time() - start))
 
 ###############################################################################
 
@@ -663,7 +657,7 @@ for iel in range(0,nel):
     yP[iconP[2,iel]]=yV[iconV[2,iel]]
     yP[iconP[3,iel]]=yV[iconV[3,iel]]
 
-print("compute xP,yP                   (%.3fs)" % (timing.time() - start))
+print("compute xP,yP.............................(%.3fs)" % (timing.time() - start))
 
 ###############################################################################
 # find out nodes on hull
@@ -680,7 +674,7 @@ for i in range(0,NV):
     if axisymmetric and xV[i]/R2<eps:
        hull[i]=True
 
-print("flag nodes on hull              (%.3fs)" % (timing.time() - start))
+print("flag nodes on hull........................(%.3fs)" % (timing.time() - start))
 
 ###############################################################################
 # flag surface nodes and elements
@@ -704,7 +698,7 @@ for iel in range(0,nel):
     if cmbV[iconV[0,iel]]:
        cmb_element[iel]=True 
 
-print("flag surf and cmb nodes+elts    (%.3fs)" % (timing.time() - start))
+print("flag surf and cmb nodes+elts..............(%.3fs)" % (timing.time() - start))
 
 ###############################################################################
 # compute normal vectors
@@ -719,7 +713,7 @@ if debug:
    np.savetxt('normals.ascii',np.array([xV[surfaceV],yV[surfaceV],\
                                         nx[surfaceV],ny[surfaceV],theta[surfaceV]]).T)
 
-print("compute surface normals         (%.3fs)" % (timing.time() - start))
+print("compute surface normals...................(%.3fs)" % (timing.time() - start))
 
 ###############################################################################
 # define boundary conditions
@@ -744,7 +738,7 @@ for i in range(0,NV):
           bc_fix[i*ndofV+1] = True ; bc_val[i*ndofV+1] = 0 #also v=0 for 2 pts
           #bc_fix[i*ndofV] = False 
 
-print("defining boundary conditions    (%.3fs)" % (timing.time() - start))
+print("defining boundary conditions..............(%.3fs)" % (timing.time() - start))
 
 ###############################################################################
 # compute array for assembly
@@ -761,7 +755,7 @@ for iel in range(0,nel):
             m1 =ndofV*iconV[k1,iel]+i1
             local_to_globalV[ikk,iel]=m1
     
-print("compute local_to_global         (%.3fs)" % (timing.time() - start))
+print("compute local_to_global...................(%.3fs)" % (timing.time() - start))
 
 ###############################################################################
 # fill I,J arrays
@@ -792,7 +786,7 @@ for iel in range(0,nel):
             J[counter]=m1
             counter+=1
 
-print("fill I,J arrays                 (%.3fs)" % (timing.time() - start))
+print("fill I,J arrays...........................(%.3fs)" % (timing.time() - start))
 
 ##############################################################################################
 ##############################################################################################
@@ -804,35 +798,38 @@ print("fill I,J arrays                 (%.3fs)" % (timing.time() - start))
 
 for istep in range(0,nstep):
 
-    print('****************************************')
-    print('********** istep='+str(istep)+' *********************')
-    print('****************************************')
+    print('**************************************************')
+    print('******************** istep='+str(istep)+' *********************')
+    print('**************************************************')
 
     ###############################################################################
     ###############################################################################
     start = timing.time()
 
-    xmapping,ymapping=define_mapping(mapping,mmapping,xV,yV,iconV,nel,axisymmetric,rad,theta)
+    xmapping,zmapping=define_mapping(mapping,mmapping,xV,yV,iconV,nel,axisymmetric,rad,theta)
+
+    print(spacing+" -> xmapping (m,M) %.2e %.2e " %(np.min(xmapping),np.max(xmapping)))
+    print(spacing+" -> zmapping (m,M) %.2e %.2e " %(np.min(zmapping),np.max(zmapping)))
 
     if debug:
-       np.savetxt('xymapping'+mapping+'.ascii',np.array([xmapping[0,:],ymapping[0,:]]).T)
-       export_mapping_points_to_vtu(mapping,mmapping,xmapping,ymapping)
+       np.savetxt('xzmapping'+mapping+'.ascii',np.array([xmapping[0,:],zmapping[0,:]]).T)
+       export_mapping_points_to_vtu(mapping,mmapping,xmapping,zmapping)
        export_quadrature_points_to_vtu(nqperdim,nqel,qcoords_r,qcoords_s,mapping,\
-                                       xmapping,ymapping)
+                                       xmapping,zmapping)
 
-    print("define mapping                  (%.3fs)" % (timing.time() - start))
+    print("define mapping............................(%.3fs)" % (timing.time() - start))
 
     ###############################################################################
     # compute element center coordinates
     ###############################################################################
     start = timing.time()
 
-    xc,zc,thetac=compute_element_center_coords(nel,mapping,xmapping,ymapping)
+    xc,zc,thetac=compute_element_center_coords(nel,mapping,xmapping,zmapping)
 
-    print(" -> xc (m,M) %.2e %.2e " %(np.min(xc),np.max(xc)))
-    print(" -> zc (m,M) %.2e %.2e " %(np.min(zc),np.max(zc)))
+    print(spacing+" -> xc (m,M) %.2e %.2e " %(np.min(xc),np.max(xc)))
+    print(spacing+" -> zc (m,M) %.2e %.2e " %(np.min(zc),np.max(zc)))
 
-    print("compute center coords           (%.3fs)" % (timing.time() - start))
+    print("compute center coords.....................(%.3fs)" % (timing.time() - start))
 
     ###############################################################################
     # compute elemental and nodal viscosity+density fields for 1st timestep only
@@ -845,16 +842,15 @@ for istep in range(0,nstep):
        compute_rho_eta_fields(mV,NV,nel,xc,zc,iconV,R1,R2,rho_m,eta_m,eta_model,\
                               rho_model,exp,rhoblobstar,zblob,Rblob)
 
-
-       print(" -> viscosity_elemental (m,M) %.2e %.2e " %(np.min(viscosity_elemental),np.max(viscosity_elemental)))
-       print(" -> density_elemental   (m,M) %.2e %.2e " %(np.min(density_elemental),np.max(density_elemental)))
-       print(" -> viscosity_nodal     (m,M) %.2e %.2e " %(np.min(viscosity_nodal),np.max(viscosity_nodal)))
-       print(" -> density_nodal       (m,M) %.2e %.2e " %(np.min(density_nodal),np.max(density_nodal)))
+       print(spacing+" -> eta_e (m,M) %.2e %.2e " %(np.min(viscosity_elemental),np.max(viscosity_elemental)))
+       print(spacing+" -> rho_e (m,M) %.2e %.2e " %(np.min(density_elemental),np.max(density_elemental)))
+       print(spacing+" -> eta_n (m,M) %.2e %.2e " %(np.min(viscosity_nodal),np.max(viscosity_nodal)))
+       print(spacing+" -> rho_n (m,M) %.2e %.2e " %(np.min(density_nodal),np.max(density_nodal)))
 
     if debug:
        np.savetxt('xycenter'+mapping+'.ascii',np.array([xc,yc,density_elemental,viscosity_elemental]).T)
 
-    print("compute rho+eta fields (%.3fs)" % (timing.time() - start))
+    print("compute rho+eta fields....................(%.3fs)" % (timing.time() - start))
 
     ###############################################################################
     # compute area and volume of elements
@@ -882,14 +878,14 @@ for istep in range(0,nstep):
             dNNNVdr=dNNNdr(rq,sq,mapping)
             dNNNVds=dNNNds(rq,sq,mapping)
             xq=np.dot(NNNV[:],xmapping[:,iel])
-            yq=np.dot(NNNV[:],ymapping[:,iel])
+            yq=np.dot(NNNV[:],zmapping[:,iel])
             zq[counterq]=yq
             radq[counterq]=np.sqrt(xq**2+yq**2)
             thetaq[counterq]=np.pi/2-np.arctan2(yq,xq)
             jcb[0,0]=np.dot(dNNNVdr[:],xmapping[:,iel])
-            jcb[0,1]=np.dot(dNNNVdr[:],ymapping[:,iel])
+            jcb[0,1]=np.dot(dNNNVdr[:],zmapping[:,iel])
             jcb[1,0]=np.dot(dNNNVds[:],xmapping[:,iel])
-            jcb[1,1]=np.dot(dNNNVds[:],ymapping[:,iel])
+            jcb[1,1]=np.dot(dNNNVds[:],zmapping[:,iel])
             jcob = np.linalg.det(jcb)
             area[iel]+=jcob*weightq
             massq[counterq]=density_elemental[iel]*weightq*jcob*2*np.pi*xq
@@ -910,23 +906,22 @@ for istep in range(0,nstep):
        #end for
     #end for
 
-    print("     -> area (m,M) %.6e %.6e " %(np.min(area),np.max(area)))
-    print("     -> total area (meas) %.12e | nel= %d" %(area.sum(),nel))
+    print(spacing+" -> area (m,M) %.6e %.6e " %(np.min(area),np.max(area)))
+    print(spacing+" -> total area (meas) %.12e | nel= %d" %(area.sum(),nel))
     if not axisymmetric:
-       print("     -> total area (anal) %e " %(np.pi*(R2**2-R1**2)))
+       print(spacing+" -> total area (anal) %e " %(np.pi*(R2**2-R1**2)))
     else:
-       print("     -> total area (anal) %e " %(np.pi*(R2**2-R1**2)/2))
+       print(spacing+" -> total area (anal) %e " %(np.pi*(R2**2-R1**2)/2))
 
-    print("     -> total volume (meas) %.12e | nel= %d" %(vol.sum(),nel))
-    print("     -> total volume (anal) %.12e" %(4*np.pi/3*(R2**3-R1**3)))
+    print(spacing+" -> total volume (meas) %.12e | nel= %d" %(vol.sum(),nel))
+    print(spacing+" -> total volume (anal) %.12e" %(4*np.pi/3*(R2**3-R1**3)))
 
-    print("     -> rhoq (m,M) %.3e %.3e " %(np.min(rhoq),np.max(rhoq)))
-    print("     -> etaq (m,M) %.3e %.3e " %(np.min(etaq),np.max(etaq)))
-    print("     -> total mass (meas) %.12e | nel= %d" %(np.sum(density_elemental*vol),nel))
+    print(spacing+" -> rhoq (m,M) %.3e %.3e " %(np.min(rhoq),np.max(rhoq)))
+    print(spacing+" -> etaq (m,M) %.3e %.3e " %(np.min(etaq),np.max(etaq)))
+    print(spacing+" -> massq (m,M) %.3e %.3e " %(np.min(massq),np.max(massq)))
+    print(spacing+" -> total mass (meas) %.12e | nel= %d" %(np.sum(density_elemental*vol),nel))
     
-    print("compute elements areas: %.3f s" % (timing.time() - start))
-    
-    if stop_here: exit()
+    print("sanity check..............................(%.3fs)" % (timing.time() - start))
 
     ###############################################################################
     # build FE matrix
@@ -968,7 +963,7 @@ for istep in range(0,nstep):
             #compute coords of quadrature points
             NNNV=NNN(rq,sq,mapping)
             xq=np.dot(NNNV[:],xmapping[:,iel])
-            yq=np.dot(NNNV[:],ymapping[:,iel])
+            yq=np.dot(NNNV[:],zmapping[:,iel])
             #zq[counterq]=yq
             #radq[counterq]=np.sqrt(xq**2+yq**2)
             #thetaq[counterq]=np.pi/2-np.arctan2(yq,xq)
@@ -977,9 +972,9 @@ for istep in range(0,nstep):
             dNNNVdr=dNNNdr(rq,sq,mapping)
             dNNNVds=dNNNds(rq,sq,mapping)
             jcb[0,0]=np.dot(dNNNVdr[:],xmapping[:,iel])
-            jcb[0,1]=np.dot(dNNNVdr[:],ymapping[:,iel])
+            jcb[0,1]=np.dot(dNNNVdr[:],zmapping[:,iel])
             jcb[1,0]=np.dot(dNNNVds[:],xmapping[:,iel])
-            jcb[1,1]=np.dot(dNNNVds[:],ymapping[:,iel])
+            jcb[1,1]=np.dot(dNNNVds[:],zmapping[:,iel])
             jcob=np.linalg.det(jcb)
             jcbi=np.linalg.inv(jcb)
 
@@ -1131,9 +1126,8 @@ for istep in range(0,nstep):
 
     #end for iel
 
-    print('     -> massq (m,M):',min(massq),max(massq))
 
-    print("build FE matrixs & rhs ( %.4fs ) | nel %d" % (timing.time() - start,nel))
+    print("build FE matrixs & rhs....................(%.3fs)" % (timing.time() - start))
 
     ###############################################################################
     # solve system
@@ -1152,8 +1146,7 @@ for istep in range(0,nstep):
 
        sol=np.zeros(Nfem,dtype=np.float64)  
 
-
-    print("solving system ( %.3fs ) | nel= %d" % (timing.time() - start,nel))
+    print("solving system............................(%.3fs)" % (timing.time() - start))
 
     ###############################################################################
     # put solution into separate x,y velocity arrays
@@ -1163,8 +1156,6 @@ for istep in range(0,nstep):
     u,v=np.reshape(sol[0:NfemV],(NV,2)).T
     p=sol[NfemV:NfemV+NfemP]*eta_ref/h_r
 
-    print("     -> u (m,M) %.7e %.7e " %(np.min(u)/vel_unit,np.max(u)/vel_unit),velunit)
-    print("     -> v (m,M) %.7e %.7e " %(np.min(v)/vel_unit,np.max(v)/vel_unit),velunit)
 
     if debug:
        np.savetxt('velocity.ascii',np.array([xV,yV,u/vel_unit,v/vel_unit]).T,header='# x,y,u,v')
@@ -1172,13 +1163,16 @@ for istep in range(0,nstep):
     vr= np.sin(theta)*u+np.cos(theta)*v
     vt= np.cos(theta)*u-np.sin(theta)*v
    
-    print("     -> nelr= %d | v_r (m,M) %.7e %.7e " %(nelr,np.min(vr)/vel_unit,np.max(vr)/vel_unit),velunit)
-    print("     -> nelr= %d | v_t (m,M) %.7e %.7e " %(nelr,np.min(vt)/vel_unit,np.max(vt)/vel_unit),velunit)
-
     vel=np.zeros(NV,dtype=np.float64)  
     vel[:]=np.sqrt(u[:]**2+v[:]**2)
 
-    print("reshape solution (%.3fs)" % (timing.time() - start))
+    print(spacing+" -> nelr= %d | u   (m,M) %.7e %.7e " %(nelr,np.min(u)/vel_unit,np.max(u)/vel_unit),velunit)
+    print(spacing+" -> nelr= %d | v   (m,M) %.7e %.7e " %(nelr,np.min(v)/vel_unit,np.max(v)/vel_unit),velunit)
+    print(spacing+" -> nelr= %d | v_r (m,M) %.7e %.7e " %(nelr,np.min(vr)/vel_unit,np.max(vr)/vel_unit),velunit)
+    print(spacing+" -> nelr= %d | v_t (m,M) %.7e %.7e " %(nelr,np.min(vt)/vel_unit,np.max(vt)/vel_unit),velunit)
+    print(spacing+" -> nelr= %d | vel (m,M) %.7e %.7e " %(nelr,np.min(vel)/vel_unit,np.max(vel)/vel_unit),velunit)
+
+    print("reshape solution..........................(%.3fs)" % (timing.time() - start))
 
     ###############################################################################
     # compute elemental pressure
@@ -1190,7 +1184,7 @@ for istep in range(0,nstep):
     for iel in range(0,nel):
         pc[iel]=np.sum(p[iconP[0:4,iel]])/4
 
-    print("compute elemental pressure (%.3fs)" % (timing.time() - start))
+    print("compute elemental pressure................(%.3fs)" % (timing.time() - start))
 
     ###############################################################################
     # compute strain rate - center to nodes - method 1
@@ -1218,9 +1212,9 @@ for istep in range(0,nstep):
            dNNNVdr=dNNNdr(rq,sq,mapping)
            dNNNVds=dNNNds(rq,sq,mapping)
            jcb[0,0]=np.dot(dNNNVdr[:],xmapping[:,iel])
-           jcb[0,1]=np.dot(dNNNVdr[:],ymapping[:,iel])
+           jcb[0,1]=np.dot(dNNNVdr[:],zmapping[:,iel])
            jcb[1,0]=np.dot(dNNNVds[:],xmapping[:,iel])
-           jcb[1,1]=np.dot(dNNNVds[:],ymapping[:,iel])
+           jcb[1,1]=np.dot(dNNNVds[:],zmapping[:,iel])
            jcbi=np.linalg.inv(jcb)
 
            #basis functions
@@ -1253,87 +1247,46 @@ for istep in range(0,nstep):
        exy1/=count
        eyy1/=count
 
-       print("     -> exx1 (m,M) %e %e " %(np.min(exx1),np.max(exx1)))
-       print("     -> eyy1 (m,M) %e %e " %(np.min(eyy1),np.max(eyy1)))
-       print("     -> exy1 (m,M) %e %e " %(np.min(exy1),np.max(exy1)))
+       print(spacing+"     -> exx1 (m,M) %e %e " %(np.min(exx1),np.max(exx1)))
+       print(spacing+"     -> eyy1 (m,M) %e %e " %(np.min(eyy1),np.max(eyy1)))
+       print(spacing+"     -> exy1 (m,M) %e %e " %(np.min(exy1),np.max(exy1)))
 
     #end if
 
-    print("compute strain rate meth-1 (%.3fs)" % (timing.time() - start))
+    print("compute strain rate meth-1................(%.3fs)" % (timing.time() - start))
 
     ###############################################################################
     # compute strain rate - corners to nodes - method 2
     ###############################################################################
     start = timing.time()
 
-    #exx2,eyy2,exy2=compute_strain_rate2(nel,mV,NV,iconV,mapping,xmapping,ymapping,u,v)
-    #print("compute strain rate meth-2 (%.3fs)" % (timing.time() - start))
+    exx2,eyy2,exy2=compute_strain_rate2(nel,mV,NV,iconV,mapping,xmapping,zmapping,u,v)
 
-    start = timing.time()
-    count= np.zeros(NV,dtype=np.int32)  
-    exx2 = np.zeros(NV,dtype=np.float64)  
-    exy2 = np.zeros(NV,dtype=np.float64)  
-    eyy2 = np.zeros(NV,dtype=np.float64)  
-    q    = np.zeros(NV,dtype=np.float64)
-
-    rVnodes=[-1,1,1,-1,0,1,0,-1,0]
-    sVnodes=[-1,-1,1,1,-1,0,1,0,0]
-
-    for iel in range(0,nel):
-        for i in range(0,mV):
-            inode=iconV[i,iel]
-            rq=rVnodes[i]
-            sq=sVnodes[i]
-
-            #compute jacobian matrix
-            dNNNVdr=dNNNdr(rq,sq,mapping)
-            dNNNVds=dNNNds(rq,sq,mapping)
-            jcb[0,0]=np.dot(dNNNVdr[:],xmapping[:,iel])
-            jcb[0,1]=np.dot(dNNNVdr[:],ymapping[:,iel])
-            jcb[1,0]=np.dot(dNNNVds[:],xmapping[:,iel])
-            jcb[1,1]=np.dot(dNNNVds[:],ymapping[:,iel])
-            jcbi=np.linalg.inv(jcb)
-
-            #basis functions
-            dNNNVdr=dNNNdr(rq,sq,'Q2')
-            dNNNVds=dNNNds(rq,sq,'Q2')
-            NNNP=NNN(rq,sq,'Q1')
-
-            # compute dNdx & dNdy
-            for k in range(0,mV):
-                dNNNVdx[k]=jcbi[0,0]*dNNNVdr[k]+jcbi[0,1]*dNNNVds[k]
-                dNNNVdy[k]=jcbi[1,0]*dNNNVdr[k]+jcbi[1,1]*dNNNVds[k]
-            #end for 
-
-            L_xx=np.dot(dNNNVdx[:],u[iconV[:,iel]])
-            L_xy=np.dot(dNNNVdx[:],v[iconV[:,iel]])
-            L_yx=np.dot(dNNNVdy[:],u[iconV[:,iel]])
-            L_yy=np.dot(dNNNVdy[:],v[iconV[:,iel]])
-
-            exx2[inode]+=L_xx
-            exy2[inode]+=(L_xy+L_yx)*0.5
-            eyy2[inode]+=L_yy
-            q[inode]+=np.dot(p[iconP[0:mP,iel]],NNNP[0:mP])
-            count[inode]+=1
-        #end for
-    #end for
-    exx2/=count
-    eyy2/=count
-    exy2/=count
-    q/=count
-
-    print("     -> exx2 (m,M) %e %e " %(np.min(exx2),np.max(exx2)))
-    print("     -> eyy2 (m,M) %e %e " %(np.min(eyy2),np.max(eyy2)))
-    print("     -> exy2 (m,M) %e %e " %(np.min(exy2),np.max(exy2)))
-
-    if debug:
-       np.savetxt('pressure'+str(istep)+'.ascii',np.array([xV,yV,q]).T)
-       np.savetxt('strainrate'+str(istep)+'.ascii',np.array([xV,yV,exx2,eyy2,exy2]).T)
+    print(spacing+" -> exx2 (m,M) %e %e " %(np.min(exx2),np.max(exx2)))
+    print(spacing+" -> eyy2 (m,M) %e %e " %(np.min(eyy2),np.max(eyy2)))
+    print(spacing+" -> exy2 (m,M) %e %e " %(np.min(exy2),np.max(exy2)))
 
     sr2=np.zeros(NV,dtype=np.float64)  
     sr2[:]=np.sqrt(0.5*(exx2[:]**2+eyy2[:]**2)+exy2[:]**2)
 
-    print("compute strain rate meth-2 (%.3fs)" % (timing.time() - start))
+    if debug:
+       np.savetxt('strainrate'+str(istep)+'.ascii',np.array([xV,yV,exx2,eyy2,exy2]).T)
+
+    print("compute strain rate meth-2................(%.3fs)" % (timing.time() - start))
+
+    ###############################################################################
+    # project pressure onto Q2 mesh
+    ###############################################################################
+    start = timing.time()
+
+    q=project_pressure_on_Q2(NV,nel,mV,mP,p,iconP,iconV)
+
+    print(spacing+" -> q (m,M) %e %e " %(np.min(q),np.max(q)))
+
+    if debug:
+       np.savetxt('pressure'+str(istep)+'.ascii',np.array([xV,yV,q]).T)
+
+    print("project pressure onto Q2 mesh.............(%.3fs)" % (timing.time() - start))
 
     ###############################################################################
     # convert strain rate tensor to spherical coordinates
@@ -1365,11 +1318,11 @@ for istep in range(0,nstep):
                       2*exyc[iel]*np.sin(thetac[iel])*np.cos(thetac[iel])+\
                       eyyc[iel]*np.cos(thetac[iel])**2
 
-    print("     -> e_rr (m,M) %e %e | nel= %d" %(np.min(e_rr2),np.max(e_rr2),nel))
-    print("     -> e_tt (m,M) %e %e | nel= %d" %(np.min(e_tt2),np.max(e_tt2),nel))
-    print("     -> e_rt (m,M) %e %e | nel= %d" %(np.min(e_rt2),np.max(e_rt2),nel))
+    print(spacing+" -> e_rr (m,M) %e %e | nel= %d" %(np.min(e_rr2),np.max(e_rr2),nel))
+    print(spacing+" -> e_tt (m,M) %e %e | nel= %d" %(np.min(e_tt2),np.max(e_tt2),nel))
+    print(spacing+" -> e_rt (m,M) %e %e | nel= %d" %(np.min(e_rt2),np.max(e_rt2),nel))
 
-    print("compute strain rate in sph. coords. (%.3fs)" % (timing.time() - start))
+    print("compute strain rate in sph. coords........(%.3fs)" % (timing.time() - start))
 
     ###############################################################################
     start = timing.time()
@@ -1403,15 +1356,15 @@ for istep in range(0,nstep):
                #compute coords of quadrature points
                NNNV=NNN(rq,sq,mapping)
                xq=np.dot(NNNV[:],xmapping[:,iel])
-               yq=np.dot(NNNV[:],ymapping[:,iel])
+               yq=np.dot(NNNV[:],zmapping[:,iel])
 
                #compute jacobian matrix
                dNNNVdr=dNNNdr(rq,sq,mapping)
                dNNNVds=dNNNds(rq,sq,mapping)
                jcb[0,0]=np.dot(dNNNVdr[:],xmapping[:,iel])
-               jcb[0,1]=np.dot(dNNNVdr[:],ymapping[:,iel])
+               jcb[0,1]=np.dot(dNNNVdr[:],zmapping[:,iel])
                jcb[1,0]=np.dot(dNNNVds[:],xmapping[:,iel])
-               jcb[1,1]=np.dot(dNNNVds[:],ymapping[:,iel])
+               jcb[1,1]=np.dot(dNNNVds[:],zmapping[:,iel])
                jcob=np.linalg.det(jcb)
                jcbi=np.linalg.inv(jcb)
 
@@ -1463,16 +1416,16 @@ for istep in range(0,nstep):
        Lxy3 = sps.linalg.spsolve(sps.csr_matrix(M_mat),rhsLxy)
        Lyx3 = sps.linalg.spsolve(sps.csr_matrix(M_mat),rhsLyx)
 
-       print("     -> Lxx3 (m,M) %e %e " %(np.min(Lxx3),np.max(Lxx3)))
-       print("     -> Lyy3 (m,M) %e %e " %(np.min(Lyy3),np.max(Lyy3)))
-       print("     -> Lxy3 (m,M) %e %e " %(np.min(Lxy3),np.max(Lxy3)))
-       print("     -> Lxy3 (m,M) %e %e " %(np.min(Lyx3),np.max(Lyx3)))
+       print(spacing+"     -> Lxx3 (m,M) %e %e " %(np.min(Lxx3),np.max(Lxx3)))
+       print(spacing+"     -> Lyy3 (m,M) %e %e " %(np.min(Lyy3),np.max(Lyy3)))
+       print(spacing+"     -> Lxy3 (m,M) %e %e " %(np.min(Lxy3),np.max(Lxy3)))
+       print(spacing+"     -> Lxy3 (m,M) %e %e " %(np.min(Lyx3),np.max(Lyx3)))
 
        exx3[:]=Lxx3[:]
        eyy3[:]=Lyy3[:]
        exy3[:]=0.5*(Lxy3[:]+Lyx3[:])
 
-    print("compute strain rate meth-3 (%.3fs)" % (timing.time() - start))
+    print("compute strain rate meth-3................(%.3fs)" % (timing.time() - start))
 
     ###############################################################################
     # normalise pressure
@@ -1517,12 +1470,12 @@ for istep in range(0,nstep):
        poffset/=4*np.pi*R2**2
        pc-=poffset
 
-    print("     -> p (m,M) %e %e " %(np.min(p),np.max(p)))
-    print("     -> q (m,M) %e %e " %(np.min(q),np.max(q)))
+    print(spacing+" -> p (m,M) %e %e " %(np.min(p),np.max(p)))
+    print(spacing+" -> q (m,M) %e %e " %(np.min(q),np.max(q)))
 
     if debug: np.savetxt('pressure.ascii',np.array([xP,yP,p]).T,header='# x,y,p')
 
-    print("normalise pressure (%.3fs)" % (timing.time() - start))
+    print("normalise pressure........................(%.3fs)" % (timing.time() - start))
 
     ###############################################################################
     # compute nodal error fields (for plotting)
@@ -1541,11 +1494,11 @@ for istep in range(0,nstep):
        for i in range(0,NP):
            p_err[i]=p[i]-pressure(xP[i],yP[i],R1,R2,rho_m,g0,exp)
 
-       print("     -> u_err (m,M) %.10e %.10e | nelr= %d" %(np.min(u_err),np.max(u_err),nelr))
-       print("     -> v_err (m,M) %.10e %.10e | nelr= %d" %(np.min(v_err),np.max(v_err),nelr))
-       print("     -> p_err (m,M) %.10e %.10e | nelr= %d" %(np.min(p_err),np.max(p_err),nelr))
+       print(spacing+" -> u_err (m,M) %.10e %.10e | nelr= %d" %(np.min(u_err),np.max(u_err),nelr))
+       print(spacing+" -> v_err (m,M) %.10e %.10e | nelr= %d" %(np.min(v_err),np.max(v_err),nelr))
+       print(spacing+" -> p_err (m,M) %.10e %.10e | nelr= %d" %(np.min(p_err),np.max(p_err),nelr))
 
-    print("compute error fields (%.3fs)" % (timing.time() - start))
+    print("compute error fields......................(%.3fs)" % (timing.time() - start))
 
     ###############################################################################
     # since I have zeroed the the spherical components of the strain rate for x<0
@@ -1566,7 +1519,7 @@ for istep in range(0,nstep):
            if surface_element[iel] and xc[iel]>=0:
               dyn_topo_eltal[iel]= -(2*viscosity_elemental[iel]*e_rrc[iel]-pc[iel])/(rho_m*g0) 
 
-    print("compute dynamic topography: %.3f s" % (timing.time() - start))
+    print("compute dynamic topography................(%.3fs)" % (timing.time() - start))
 
     ###############################################################################
     # export fields at both surfaces
@@ -1620,99 +1573,22 @@ for istep in range(0,nstep):
        np.savetxt('sr3_R1.ascii',np.array([xV[0:nnt],yV[0:nnt],sr3[0:nnt],theta[0:nnt]]).T)
        np.savetxt('sr3_R2.ascii',np.array([xV[surfaceQ2],yV[surfaceQ2],sr3[surfaceQ2],theta[surfaceQ2]]).T)
 
-    print("export p&q on R1,R2 (%.3fs)" % (timing.time() - start))
+    print("export p&q on R1,R2.......................(%.3fs)" % (timing.time() - start))
 
     ###############################################################################
     # compute error
     ###############################################################################
     start = timing.time()
 
-    vrms=0.
-    errv=0.
-    errp=0.
-    errq=0.
-    errexx1=0. ; erreyy1=0. ; errexy1=0.
-    errexx2=0. ; erreyy2=0. ; errexy2=0.
-    errexx3=0. ; erreyy3=0. ; errexy3=0.
-    for iel in range (0,nel):
+    errv,errp,vrms=compute_errors(nel,nqel,mapping,xmapping,zmapping,qcoords_r,\
+                                  qcoords_s,qweights,R1,R2,rho_m,g0,exp,u,v,p,\
+                                  axisymmetric,iconV,iconP)
 
-        for kq in range(0,nqel):
-            rq=qcoords_r[kq]
-            sq=qcoords_s[kq]
-
-            #compute coords of quadrature points
-            NNNV=NNN(rq,sq,mapping)
-            xq=np.dot(NNNV[:],xmapping[:,iel])
-            yq=np.dot(NNNV[:],ymapping[:,iel])
-
-            #compute jacobian matrix
-            dNNNVdr=dNNNdr(rq,sq,mapping)
-            dNNNVds=dNNNds(rq,sq,mapping)
-            jcb[0,0]=np.dot(dNNNVdr[:],xmapping[:,iel])
-            jcb[0,1]=np.dot(dNNNVdr[:],ymapping[:,iel])
-            jcb[1,0]=np.dot(dNNNVds[:],xmapping[:,iel])
-            jcb[1,1]=np.dot(dNNNVds[:],ymapping[:,iel])
-            jcob=np.linalg.det(jcb)
-            JxW=jcob*qweights[kq]
-
-            #basis functions
-            NNNV=NNN(rq,sq,'Q2')
-            dNNNVdr=dNNNdr(rq,sq,'Q2')
-            dNNNVds=dNNNds(rq,sq,'Q2')
-            NNNP=NNN(rq,sq,'Q1')
-
-            uq=np.dot(NNNV[:],u[iconV[:,iel]])
-            vq=np.dot(NNNV[:],v[iconV[:,iel]])
-            qq=np.dot(NNNV[:],q[iconV[:,iel]])
-
-            errv+=((uq-velocity_x(xq,yq,R1,R2,exp))**2+\
-                   (vq-velocity_y(xq,yq,R1,R2,exp))**2)*JxW
-            errq+=(qq-pressure(xq,yq,R1,R2,rho_m,g0,exp))**2*JxW
-
-            #exx1q=np.dot(NNNV[:],exx1[iconV[:,iel]])
-            #eyy1q=np.dot(NNNV[:],eyy1[iconV[:,iel]])
-            #exy1q=np.dot(NNNV[:],exy1[iconV[:,iel]])
-            #exx2q=np.dot(NNNV[:],exx2[iconV[:,iel]])
-            #eyy2q=np.dot(NNNV[:],eyy2[iconV[:,iel]])
-            #exy2q=np.dot(NNNV[:],exy2[iconV[:,iel]])
-            #exx3q=np.dot(NNNV[:],exx3[iconV[:,iel]])
-            #eyy3q=np.dot(NNNV[:],eyy3[iconV[:,iel]])
-            #exy3q=np.dot(NNNV[:],exy3[iconV[:,iel]])
-            #errexx1+=(exx1q-sr_xx(xq,yq,R1,R2,kk))**2*JxW
-            #erreyy1+=(eyy1q-sr_yy(xq,yq,R1,R2,kk))**2*JxW
-            #errexy1+=(exy1q-sr_xy(xq,yq,R1,R2,kk))**2*JxW
-            #errexx2+=(exx2q-sr_xx(xq,yq,R1,R2,kk))**2*JxW
-            #erreyy2+=(eyy2q-sr_yy(xq,yq,R1,R2,kk))**2*JxW
-            #errexy2+=(exy2q-sr_xy(xq,yq,R1,R2,kk))**2*JxW
-            #errexx3+=(exx3q-sr_xx(xq,yq,R1,R2,kk))**2*JxW
-            #erreyy3+=(eyy3q-sr_yy(xq,yq,R1,R2,kk))**2*JxW
-            #errexy3+=(exy3q-sr_xy(xq,yq,R1,R2,kk))**2*JxW
-
-            if axisymmetric: 
-               JxW*=2*np.pi*xq
-
-            vrms+=(uq**2+vq**2)*JxW
-
-            pq=np.dot(NNNP[:],p[iconP[:,iel]])
-            errp+=(pq-pressure(xq,yq,R1,R2,rho_m,g0,exp))**2*JxW
-
-        # end for kq
-    # end for iel
-
-    errv=np.sqrt(errv)
-    errp=np.sqrt(errp)
-    errq=np.sqrt(errq)
-
-    if axisymmetric :
-       vrms=np.sqrt(vrms/ (4/3*np.pi*(R2**3-R1**3)) )
-    else:
-       vrms=np.sqrt(vrms/ (np.pi*(R2**2-R1**2)) )
-
-    print('     -> nelr= %6d ; vrms= %.14e' %(nelr,vrms/vel_unit))
+    print(spacing+' -> nelr= %d ; vrms= %.12e' %(nelr,vrms/vel_unit))
     if exp==0:
-       print("     -> nelr= %6d ; errv= %.14e ; errp= %.14e ; errq= %.14e" %(nelr,errv,errp,errq))
+       print(spacing+" -> nelr= %d ; errv= %.12e ; errp= %.14e " %(nelr,errv,errp))
 
-    print("compute errors (%.3fs)" % (timing.time() - start))
+    print("compute errors............................(%.3fs)" % (timing.time() - start))
 
     ###############################################################################
     # compute gravity acceleration on pressure nodes
@@ -1736,9 +1612,9 @@ for istep in range(0,nstep):
 
        np.savetxt('gravity_self.ascii',np.array([xP,yP,g_x,g_y,g_z,gnorm]).T)
 
-       print("     -> g_x (m,M) %.4e %.4e " %(np.min(g_x),np.max(g_x)))
-       print("     -> g_y (m,M) %.4e %.4e " %(np.min(g_y),np.max(g_y)))
-       print("     -> g_z (m,M) %.4e %.4e " %(np.min(g_z),np.max(g_z)))
+       print(spacing+"     -> g_x (m,M) %.4e %.4e " %(np.min(g_x),np.max(g_x)))
+       print(spacing+"     -> g_y (m,M) %.4e %.4e " %(np.min(g_y),np.max(g_y)))
+       print(spacing+"     -> g_z (m,M) %.4e %.4e " %(np.min(g_z),np.max(g_z)))
 
        print("self gravity (%.3fs)" % (timing.time() - start))
 
@@ -1749,7 +1625,7 @@ for istep in range(0,nstep):
 
     if visu==1:
 
-       export_solutionQ2_to_vtu(istep,NV,nel,xV,yV,vel_unit,u,v,viscosity_nodal,\
+       export_solutionQ2_to_vtu(istep,NV,nel,xV,yV,vel_unit,u,v,viscosity_nodal,nx,ny,\
                                 hull,surfaceV,cmbV,bc_fix,area,viscosity_elemental,\
                                 density_elemental,surface_element,cmb_element,iconV)
        export_solutionQ1_to_vtu(istep,exp,NV,nel,xV,yV,vel_unit,u,v,vr,vt,rad,theta,\
@@ -1757,13 +1633,17 @@ for istep in range(0,nstep):
                                 density_nodal,iconQ1,g0,R1,R2,rho_m,gravity_model,\
                                 rhoblob,Rblob,zblob,rho_c)
 
-    print("export to vtu file (%.3fs)" % (timing.time() - start))
+    print("export to vtu file........................(%.3fs)" % (timing.time() - start))
 
     ###############################################################################
 
     if exp>0:
-       print("EARTH4D | nelr= %d | v_r  %.5f %.5f  v_t  %.5f %.5f v_rms: %.5f " %\
-       (nelr,np.min(vr)/vel_unit,np.max(vr)/vel_unit,np.min(vt)/vel_unit,np.max(vt)/vel_unit,vrms/vel_unit))
+       print(spacing+" -> EARTH4D | nelr= %d v_r %.5f %.5f " %\
+       (nelr,np.min(vr)/vel_unit,np.max(vr)/vel_unit))
+       print(spacing+" -> EARTH4D | nelr= %d v_t %.5f %.5f " %\
+       (nelr,np.min(vt)/vel_unit,np.max(vt)/vel_unit))
+       print(spacing+" -> EARTH4D | nelr= %d v_rms %.5f " %\
+       (nelr,vrms/vel_unit))
 
     ###############################################################################
     # M is in (x,z) y=0 plane, so yM=0
@@ -1778,10 +1658,8 @@ for istep in range(0,nstep):
        print(" compute gravity ")
        print("------------------------------")
 
-
        print('np_grav=',np_grav)
        print('height=',height/1e3,'km')
-       print('nel_phi=',nel_phi)
 
        xM=np.zeros(np_grav,dtype=np.float64)     
        zM=np.zeros(np_grav,dtype=np.float64)     
@@ -1882,12 +1760,12 @@ for istep in range(0,nstep):
           np.savetxt('grid_after_advection_{:04d}.ascii'.format(istep),np.array([xV,yV]).T,header='# x,y')
           np.savetxt('grid_distortion_{:04d}.ascii'.format(istep),np.array([xV,yV,u*dt,v*dt]).T,header='# x,y')
 
-    print("advection step (%.3fs)" % (timing.time() - start))
+    print("advection step............................(%.3fs)" % (timing.time() - start))
 
 #end for istep
 
-print("-----------------------------")
-print("------------the end----------")
-print("-----------------------------")
+print("+=================================================")
+print("----------------the end--------------------------")
+print("+=================================================")
 
 ###############################################################################

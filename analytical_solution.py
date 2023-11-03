@@ -4,6 +4,8 @@ from numba import jit
 import numpy as np
 import math as math # <-- remove ?
 
+###############################################################################
+
 @jit(nopython=True)
 def velocity_x(x,y,R1,R2,exp):
     if exp==0:
@@ -22,6 +24,8 @@ def velocity_x(x,y,R1,R2,exp):
     else:
        val=0
     return val
+
+###############################################################################
 
 @jit(nopython=True)
 def velocity_y(x,y,R1,R2,exp):
@@ -42,6 +46,8 @@ def velocity_y(x,y,R1,R2,exp):
        val=0
     return val
 
+###############################################################################
+
 @jit(nopython=True)
 def pressure(x,y,R1,R2,rho0,g0,exp):
     r=np.sqrt(x*x+y*y)
@@ -57,6 +63,8 @@ def pressure(x,y,R1,R2,rho0,g0,exp):
     else: 
        val=rho0*g0*(R2-r)
     return val
+
+###############################################################################
 
 @jit(nopython=True)
 def sr_xx(x,y,R1,R2,exp):
@@ -80,6 +88,8 @@ def sr_xx(x,y,R1,R2,exp):
        val=0
     return val
 
+###############################################################################
+
 @jit(nopython=True)
 def sr_yy(x,y,R1,R2,exp):
     if exp==0:
@@ -101,6 +111,8 @@ def sr_yy(x,y,R1,R2,exp):
     else: 
        val=0
     return val
+
+###############################################################################
 
 @jit(nopython=True)
 def sr_xy(x,y,R1,R2,exp):

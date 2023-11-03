@@ -1,4 +1,7 @@
+###############################################################################
 import numpy as np
+
+###############################################################################
 
 def compute_normals(normal_type,NV,xV,yV,mV,nqel,surfaceV,hull,\
                     R1,R2,eps,iconV,axisymmetric,rad,theta,\
@@ -107,6 +110,4 @@ def compute_normals(normal_type,NV,xV,yV,mV,nqel,surfaceV,hull,\
 
    return nx,ny
 
-
-
-
+###############################################################################

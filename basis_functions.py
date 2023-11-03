@@ -1,5 +1,8 @@
+###############################################################################
 from numba import jit
 import numpy as np
+
+###############################################################################
 
 #@jit(nopython=True)
 def NNN(r,s,space):
@@ -96,7 +99,9 @@ def NNN(r,s,space):
        val[42]=N1r*N7s ;val[43]=N2r*N7s ;val[44]=N3r*N7s ;val[45]=N4r*N7s ;val[46]=N5r*N7s ;val[47]=N6r*N7s ;val[48]=N7r*N7s
     return val
 
-@jit(nopython=True)
+###############################################################################
+
+#@jit(nopython=True)
 def dNNNdr(r,s,space):
    if space=='Q1':
        val = np.zeros(4,dtype=np.float64)
@@ -195,7 +200,9 @@ def dNNNdr(r,s,space):
        val[42]=N1r*N7s ;val[43]=N2r*N7s ;val[44]=N3r*N7s ;val[45]=N4r*N7s ;val[46]=N5r*N7s ;val[47]=N6r*N7s ;val[48]=N7r*N7s
    return val
 
-@jit(nopython=True)
+###############################################################################
+
+#@jit(nopython=True)
 def dNNNds(r,s,space):
    if space=='Q1':
        val=np.zeros(4,dtype=np.float64)
@@ -294,9 +301,4 @@ def dNNNds(r,s,space):
        val[42]=N1r*N7s ; val[43]=N2r*N7s ; val[44]=N3r*N7s ; val[45]=N4r*N7s ; val[46]=N5r*N7s ; val[47]=N6r*N7s ; val[48]=N7r*N7s
    return val
 
-
-
-
-
-
-
+###############################################################################

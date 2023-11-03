@@ -1,3 +1,4 @@
+###############################################################################
 import numpy as np
 
 ###############################################################################
@@ -5,7 +6,7 @@ import numpy as np
 # Q2 nodes for mapping are same as Q2 basis functions
 # Q3,Q4,Q5,Q6 nodes for mapping are built
 # note that python uses row-major storage for 2S arrays and since we need 
-# to do dot products with xmapping and ymapping it makes more sense 
+# to do dot products with xmapping and zmapping it makes more sense 
 # to use column-major, i.e. F_CONTIGUOUS in python jargon.
 ###############################################################################
     
@@ -104,7 +105,6 @@ def define_mapping(mapping,mmapping,xV,yV,iconV,nel,axisymmetric,rad,theta):
                    xmapping[counter,iel]=math.sin(ttt)*rrr
                    zmapping[counter,iel]=math.cos(ttt)*rrr
                    counter+=1
-
 
     return xmapping,zmapping
 
