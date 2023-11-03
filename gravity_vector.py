@@ -3,6 +3,8 @@ import numpy as np
 
 Ggrav=6.67430e-11
 
+###############################################################################
+
 @jit(nopython=True)
 def gx(x,y,g0):
     val= -x/np.sqrt(x*x+y*y)*g0
@@ -12,6 +14,8 @@ def gx(x,y,g0):
 def gy(x,y,g0):
     val= -y/np.sqrt(x*x+y*y)*g0
     return val
+
+###############################################################################
 
 def gravity_acceleration(x,z,R1,R2,gravity_model,g0,rhom,rhoc,rhoblob,Rblob,zblob):
     r=np.sqrt(x**2+z**2)
@@ -50,8 +54,8 @@ def gravity_acceleration(x,z,R1,R2,gravity_model,g0,rhom,rhoc,rhoblob,Rblob,zblo
        gx=-x/r*gr
        gz=-z/r*gr
 
-       gx=0
-       gz=0
+       #gx=0
+       #gz=0
        
        drho=rhom-rhoblob
        Mblob=4*np.pi/3*drho*Rblob**3
@@ -61,8 +65,8 @@ def gravity_acceleration(x,z,R1,R2,gravity_model,g0,rhom,rhoc,rhoblob,Rblob,zblo
              gr=4*np.pi*Ggrav*drho*dist/3
           else:
              gr=Ggrav*Mblob/dist**2
-          gx=-x/dist*gr
-          gz=-(z-zblob)/dist*gr
+          gx+=-x/dist*gr
+          gz+=-(z-zblob)/dist*gr
 
 
     #---------------------------------

@@ -21,6 +21,11 @@ from gravity_vector import *
 from compute_gravity_at_point import *
 #from compute_strain_rate2 import *
 from export_to_vtu import *
+from quadrature_setup import *
+from compute_normals import *
+from define_mapping import *
+from compute_element_center_coords import *
+from compute_rho_eta_fields import *
 
 ###############################################################################
 
@@ -74,9 +79,9 @@ year=365.25*3600*24
 Ggrav=6.67430e-11
 mGal=1e-5
 
-print("+------------------------------")
-print("+---------FL.A.P.S-------------")
-print("+------------------------------")
+print("+----------------------------------------")
+print("+--------------FL.A.P.S------------------")
+print("+----------------------------------------")
 
 ndim=2   # number of dimensions
 mV=9     # number of nodes making up an element
@@ -120,7 +125,7 @@ else:
    # exp=2: blob
    # exp=3: pancake pi/8
    exp         = 1
-   nelr        = 64 # Q1 cells!
+   nelr        = 32 # Q1 cells!
    visu        = 1
    nqperdim    = 3
    mapping     = 'Q2' 
@@ -146,7 +151,6 @@ if exp==0:
    R1=1.
    R2=2.
    rho_m=0.
-   kk=4
    g0=1.
    eta_ref=1
    eta_m=1
@@ -160,7 +164,6 @@ if exp==0:
 else:
    R1=3400e3
    R2=6400e3
-   kk=0
    g0=10.
    eta_ref=1e21
    eta_m=1e21
@@ -305,7 +308,7 @@ if planet_is_Earth:
       depth_prem= np.empty(44,dtype=np.float64)
       g_prem = np.empty(44,dtype=np.float64)
 
-print("+-> read EARTH data (%.3fs)" % (timing.time() - start))
+print("read EARTH data                 (%.3fs)" % (timing.time() - start))
 
 ###############################################################################
 ###############################################################################
@@ -340,7 +343,7 @@ if planet_is_Mars:
       R_disc4 = 1822.5068139999998e3
       eta_max=1e25
 
-print("+-> read MARS data (%.3fs)" % (timing.time() - start))
+print("read MARS data                  (%.3fs)" % (timing.time() - start))
 
 ###############################################################################
 ###############################################################################
@@ -357,65 +360,9 @@ if planet_is_4DEarth:
 ###############################################################################
 start = timing.time()
 
-if nqperdim==2:
-   coords=[-1/np.sqrt(3),1/np.sqrt(3)]
-   weights=[1,1]
+nqel,qcoords_r,qcoords_s,qweights=quadrature_setup(nqperdim)
 
-if nqperdim==3:
-   coords=[-np.sqrt(3./5.),0.,np.sqrt(3./5.)]
-   weights=[5./9.,8./9.,5./9.]
-
-if nqperdim==4:
-   qc4a=np.sqrt(3./7.+2./7.*np.sqrt(6./5.))
-   qc4b=np.sqrt(3./7.-2./7.*np.sqrt(6./5.))
-   qw4a=(18-np.sqrt(30.))/36.
-   qw4b=(18+np.sqrt(30.))/36.
-   coords=[-qc4a,-qc4b,qc4b,qc4a]
-   weights=[qw4a,qw4b,qw4b,qw4a]
-
-if nqperdim==5:
-   qc5a=np.sqrt(5.+2.*np.sqrt(10./7.))/3.
-   qc5b=np.sqrt(5.-2.*np.sqrt(10./7.))/3.
-   qc5c=0.
-   qw5a=(322.-13.*np.sqrt(70.))/900.
-   qw5b=(322.+13.*np.sqrt(70.))/900.
-   qw5c=128./225.
-   coords=[-qc5a,-qc5b,qc5c,qc5b,qc5a]
-   weights=[qw5a,qw5b,qw5c,qw5b,qw5a]
-
-if nqperdim==6:
-   coords=[-0.932469514203152,-0.661209386466265,\
-           -0.238619186083197,+0.238619186083197,\
-           +0.661209386466265,+0.932469514203152]
-   weights=[0.171324492379170,0.360761573048139,\
-            0.467913934572691,0.467913934572691,\
-            0.360761573048139,0.171324492379170]
-if nqperdim==7:
-   coords=[-0.949107912342759,-0.741531185599394,\
-           -0.405845151377397,0.000000000000000,\
-            0.405845151377397,0.741531185599394,\
-            0.949107912342759]
-   weights=[0.129484966168870,0.279705391489277,\
-            0.381830050505119,0.417959183673469,\
-            0.381830050505119,0.279705391489277,\
-            0.129484966168870]
-
-nqel=nqperdim**2
-qcoords_r=np.empty(nqel,dtype=np.float64)
-qcoords_s=np.empty(nqel,dtype=np.float64)
-qweights=np.empty(nqel,dtype=np.float64)
-
-counterq=0
-for iq in range(0,nqperdim):
-    for jq in range(0,nqperdim):
-        qcoords_r[counterq]=coords[iq]
-        qcoords_s[counterq]=coords[jq]
-        qweights[counterq]=weights[iq]*weights[jq]
-        counterq+=1
-    #end for
-#end for
-
-print("+-> quadrature setup (%.3fs)" % (timing.time() - start))
+print("quadrature setup                (%.3fs)" % (timing.time() - start))
 
 ###############################################################################
 # grid point setup
@@ -508,7 +455,7 @@ else:
    if debug:
       np.savetxt('grid.ascii',np.array([xV,yV,theta]).T,header='# x,y')
 
-print("+-> coordinate arrays (%.3fs)" % (timing.time() - start))
+print("coordinate arrays               (%.3fs)" % (timing.time() - start))
 
 ###############################################################################
 # build iconQ1 array 
@@ -550,7 +497,7 @@ else:
 
 if debug: export_Q1_mesh_to_vtu(NV,nel,xV,yV,iconQ1)
 
-print("+-> build iconQ1 (%.3fs)" % (timing.time() - start))
+print("build iconQ1                    (%.3fs)" % (timing.time() - start))
 
 ###############################################################################
 # now that the grid has been built as if it was a Q1 grid, 
@@ -572,6 +519,9 @@ NfemV=NV*ndofV   # Total number of degrees of V freedom
 NfemP=NP*ndofP   # Total number of degrees of P freedom
 Nfem=NfemV+NfemP # total number of dofs
 
+h_r=(R2-R1)/nelr # radial resolution
+
+print('  -------------------')
 print('  nelr=',nelr)
 print('  nelt=',nelt)
 print('  nel=',nel)
@@ -590,10 +540,10 @@ print('  Rblob=',Rblob)
 print('  zblob=',zblob)
 print('  compute_gravity=',compute_gravity)
 print('  nel_phi=',nel_phi)
+print('  h_r=',h_r)
+print('  -------------------')
 
-h_r=(R2-R1)/nelr # radial resolution
-
-print("+-> compute nekr,nelt,nel... (%.3fs)" % (timing.time() - start))
+print("compute nekr,nelt,nel...        (%.3fs)" % (timing.time() - start))
 
 ###############################################################################
 # connectivity
@@ -673,7 +623,7 @@ else:
        #end for
    #end for
 
-print("+-> connectivity array (%.3fs)" % (timing.time() - start))
+print("connectivity array              (%.3fs)" % (timing.time() - start))
 
 ###############################################################################
 
@@ -713,7 +663,7 @@ for iel in range(0,nel):
     yP[iconP[2,iel]]=yV[iconV[2,iel]]
     yP[iconP[3,iel]]=yV[iconV[3,iel]]
 
-print("+-> compute xP,yP (%.3fs)" % (timing.time() - start))
+print("compute xP,yP                   (%.3fs)" % (timing.time() - start))
 
 ###############################################################################
 # find out nodes on hull
@@ -730,7 +680,7 @@ for i in range(0,NV):
     if axisymmetric and xV[i]/R2<eps:
        hull[i]=True
 
-print("+-> flag nodes on hull (%.3fs)" % (timing.time() - start))
+print("flag nodes on hull              (%.3fs)" % (timing.time() - start))
 
 ###############################################################################
 # flag surface nodes and elements
@@ -754,125 +704,22 @@ for iel in range(0,nel):
     if cmbV[iconV[0,iel]]:
        cmb_element[iel]=True 
 
-print("+-> flag surf and cmb nodes and elts (%.3fs)" % (timing.time() - start))
+print("flag surf and cmb nodes+elts    (%.3fs)" % (timing.time() - start))
 
 ###############################################################################
 # compute normal vectors
 ###############################################################################
 start = timing.time()
 
-nx1=np.zeros(NV,dtype=np.float64) 
-ny1=np.zeros(NV,dtype=np.float64) 
-nx2=np.zeros(NV,dtype=np.float64) 
-ny2=np.zeros(NV,dtype=np.float64) 
-
-if normal_type==1:
-
-   #compute normal 1 type
-   for i in range(0,NV):
-       if axisymmetric and xV[i]/R2<eps:
-          nx1[i]=-1
-          ny1[i]=0
-       if rad[i]/R1<1+eps:
-          nx1[i]=-np.sin(theta[i])
-          ny1[i]=-np.cos(theta[i])
-       if rad[i]/R2>1-eps:
-          nx1[i]=np.sin(theta[i])
-          ny1[i]=np.cos(theta[i])
-
-   if debug:
-      np.savetxt('normal1a.ascii',np.array([xV[surfaceV],yV[surfaceV],\
-                                            nx1[surfaceV],ny1[surfaceV],theta[surfaceV]]).T)
-
-if normal_type==2:
-   #compute normal 2 type
-   dNNNVdx=np.zeros(mV,dtype=np.float64) 
-   dNNNVdy=np.zeros(mV,dtype=np.float64) 
-   jcb=np.zeros((2,2),dtype=np.float64)
-   for iel in range(0,nel):
-       if True: #hull[iconV[0,iel]] or hull[iconV[2,iel]]: 
-          for kq in range(0,nqel):
-              rq=qcoords_r[kq]
-              sq=qcoords_s[kq]
-              weightq=qweights[kq]
-              #compute jacobian matrix
-              dNNNVdr=dNNNdr(rq,sq,mapping)
-              dNNNVds=dNNNds(rq,sq,mapping)
-              jcb[0,0]=np.dot(dNNNVdr[:],xmapping[:,iel])
-              jcb[0,1]=np.dot(dNNNVdr[:],ymapping[:,iel])
-              jcb[1,0]=np.dot(dNNNVds[:],xmapping[:,iel])
-              jcb[1,1]=np.dot(dNNNVds[:],ymapping[:,iel])
-              jcob=np.linalg.det(jcb)
-              jcbi=np.linalg.inv(jcb)
-              #basis functions
-              dNNNVdr=dNNNdr(rq,sq,'Q2')
-              dNNNVds=dNNNds(rq,sq,'Q2')
-              # compute dNdx & dNdy
-              for k in range(0,mV):
-                  dNNNVdx[k]=jcbi[0,0]*dNNNVdr[k]+jcbi[0,1]*dNNNVds[k]
-                  dNNNVdy[k]=jcbi[1,0]*dNNNVdr[k]+jcbi[1,1]*dNNNVds[k]
-              #end for 
-              nx2[iconV[0,iel]]+=dNNNVdx[0]*jcob*weightq
-              ny2[iconV[0,iel]]+=dNNNVdy[0]*jcob*weightq
-              nx2[iconV[1,iel]]+=dNNNVdx[1]*jcob*weightq
-              ny2[iconV[1,iel]]+=dNNNVdy[1]*jcob*weightq
-              nx2[iconV[2,iel]]+=dNNNVdx[2]*jcob*weightq
-              ny2[iconV[2,iel]]+=dNNNVdy[2]*jcob*weightq
-              nx2[iconV[3,iel]]+=dNNNVdx[3]*jcob*weightq
-              ny2[iconV[3,iel]]+=dNNNVdy[3]*jcob*weightq
-              nx2[iconV[4,iel]]+=dNNNVdx[4]*jcob*weightq
-              ny2[iconV[4,iel]]+=dNNNVdy[4]*jcob*weightq
-              nx2[iconV[5,iel]]+=dNNNVdx[5]*jcob*weightq
-              ny2[iconV[5,iel]]+=dNNNVdy[5]*jcob*weightq
-              nx2[iconV[6,iel]]+=dNNNVdx[6]*jcob*weightq
-              ny2[iconV[6,iel]]+=dNNNVdy[6]*jcob*weightq
-              nx2[iconV[7,iel]]+=dNNNVdx[7]*jcob*weightq
-              ny2[iconV[7,iel]]+=dNNNVdy[7]*jcob*weightq
-          #end for
-       #end if
-   #end for
-
-   for i in range(0,NV):
-       if hull[i]:
-          norm=np.sqrt(nx2[i]**2+ny2[i]**2)
-          nx2[i]/=norm
-          ny2[i]/=norm
-
-   np.savetxt('normal2a.ascii',np.array([xV[surfaceV],yV[surfaceV],\
-                                         nx2[surfaceV],ny2[surfaceV],theta[surfaceV]]).T)
-
-if axisymmetric:
-   for i in range(0,NV):
-       if xV[i]/R1<eps and yV[i]/R2>1-eps:
-          nx1[i]=0
-          ny1[i]=0
-          nx2[i]=0
-          ny2[i]=0
-       if xV[i]/R1<eps and yV[i]/R2<-1+eps:
-          nx1[i]=0
-          ny1[i]=0
-          nx2[i]=0
-          ny2[i]=0
+nx,ny=compute_normals(normal_type,NV,xV,yV,mV,nqel,surfaceV,hull,\
+                      R1,R2,eps,iconV,axisymmetric,rad,theta,\
+                      qcoords_r,qcoords_s,qweights,)
 
 if debug:
-   np.savetxt('normal_diff.ascii',np.array([xV[surfaceV],yV[surfaceV],\
-                                            nx2[surfaceV]-nx1[surfaceV],\
-                                            ny2[surfaceV]-ny1[surfaceV],theta[surfaceV]]).T)
+   np.savetxt('normals.ascii',np.array([xV[surfaceV],yV[surfaceV],\
+                                        nx[surfaceV],ny[surfaceV],theta[surfaceV]]).T)
 
-   np.savetxt('normal_dot.ascii',np.array([xV[surfaceV],yV[surfaceV],\
-                                           nx2[surfaceV]*nx1[surfaceV]+\
-                                           ny2[surfaceV]*ny1[surfaceV],theta[surfaceV]]).T)
-
-nx=np.zeros(NV,dtype=np.float64) 
-ny=np.zeros(NV,dtype=np.float64) 
-if normal_type==1:
-   nx[:]=nx1[:]
-   ny[:]=ny1[:]
-else:
-   nx[:]=nx2[:]
-   ny[:]=ny2[:]
-
-print("+-> compute surface normals (%.3fs)" % (timing.time() - start))
+print("compute surface normals         (%.3fs)" % (timing.time() - start))
 
 ###############################################################################
 # define boundary conditions
@@ -884,11 +731,11 @@ bc_val = np.zeros(Nfem,dtype=np.float64)
 
 for i in range(0,NV):
     if rad[i]/R1<1+eps:
-       bc_fix[i*ndofV]   = True ; bc_val[i*ndofV]   = velocity_x(xV[i],yV[i],R1,R2,kk,exp)
-       bc_fix[i*ndofV+1] = True ; bc_val[i*ndofV+1] = velocity_y(xV[i],yV[i],R1,R2,kk,exp)
+       bc_fix[i*ndofV]   = True ; bc_val[i*ndofV]   = velocity_x(xV[i],yV[i],R1,R2,exp)
+       bc_fix[i*ndofV+1] = True ; bc_val[i*ndofV+1] = velocity_y(xV[i],yV[i],R1,R2,exp)
     if rad[i]/R2>(1-eps) and not surface_free_slip:
-       bc_fix[i*ndofV]   = True ; bc_val[i*ndofV]   = velocity_x(xV[i],yV[i],R1,R2,kk,exp)
-       bc_fix[i*ndofV+1] = True ; bc_val[i*ndofV+1] = velocity_y(xV[i],yV[i],R1,R2,kk,exp)
+       bc_fix[i*ndofV]   = True ; bc_val[i*ndofV]   = velocity_x(xV[i],yV[i],R1,R2,exp)
+       bc_fix[i*ndofV+1] = True ; bc_val[i*ndofV+1] = velocity_y(xV[i],yV[i],R1,R2,exp)
 
     #vertical wall x=0
     if axisymmetric and xV[i]/R1<eps:
@@ -897,7 +744,7 @@ for i in range(0,NV):
           bc_fix[i*ndofV+1] = True ; bc_val[i*ndofV+1] = 0 #also v=0 for 2 pts
           #bc_fix[i*ndofV] = False 
 
-print("+-> defining boundary conditions (%.3fs)" % (timing.time() - start))
+print("defining boundary conditions    (%.3fs)" % (timing.time() - start))
 
 ###############################################################################
 # compute array for assembly
@@ -914,7 +761,7 @@ for iel in range(0,nel):
             m1 =ndofV*iconV[k1,iel]+i1
             local_to_globalV[ikk,iel]=m1
     
-print("+-> compute local_to_global: %.3f s" % (timing.time() - start))
+print("compute local_to_global         (%.3fs)" % (timing.time() - start))
 
 ###############################################################################
 # fill I,J arrays
@@ -945,7 +792,7 @@ for iel in range(0,nel):
             J[counter]=m1
             counter+=1
 
-print("+-> fill I,J arrays: %.3f s" % (timing.time() - start))
+print("fill I,J arrays                 (%.3fs)" % (timing.time() - start))
 
 ##############################################################################################
 ##############################################################################################
@@ -957,164 +804,57 @@ print("+-> fill I,J arrays: %.3f s" % (timing.time() - start))
 
 for istep in range(0,nstep):
 
-    print('******************************')
-    print('********* istep='+str(istep)+' ************')
-    print('******************************')
+    print('****************************************')
+    print('********** istep='+str(istep)+' *********************')
+    print('****************************************')
 
     ###############################################################################
-    # Q1 nodes for mapping are corners of Q2 basis functions
-    # Q2 nodes for mapping are same as Q2 basis functions
-    # Q3,Q4,Q5,Q6 nodes for mapping are built
-    # note that python uses row-major storage for 2S arrays and since we need 
-    # to do dot products with xmapping and ymapping it makes more sense 
-    # to use column-major, i.e. F_CONTIGUOUS in python jargon.
     ###############################################################################
     start = timing.time()
 
-    xmapping=np.zeros((mmapping,nel),dtype=np.float64,order='F')
-    ymapping=np.zeros((mmapping,nel),dtype=np.float64,order='F')
+    xmapping,ymapping=define_mapping(mapping,mmapping,xV,yV,iconV,nel,axisymmetric,rad,theta)
 
-    if mapping=='Q1':
-       for iel in range(0,nel):
-           xmapping[0,iel]=xV[iconV[0,iel]] ; ymapping[0,iel]=yV[iconV[0,iel]]
-           xmapping[1,iel]=xV[iconV[1,iel]] ; ymapping[1,iel]=yV[iconV[1,iel]]
-           xmapping[2,iel]=xV[iconV[2,iel]] ; ymapping[2,iel]=yV[iconV[2,iel]]
-           xmapping[3,iel]=xV[iconV[3,iel]] ; ymapping[3,iel]=yV[iconV[3,iel]]
-
-    if mapping=='Q2':
-       for iel in range(0,nel):
-           xmapping[0,iel]=xV[iconV[0,iel]] ; ymapping[0,iel]=yV[iconV[0,iel]]
-           xmapping[1,iel]=xV[iconV[1,iel]] ; ymapping[1,iel]=yV[iconV[1,iel]]
-           xmapping[2,iel]=xV[iconV[2,iel]] ; ymapping[2,iel]=yV[iconV[2,iel]]
-           xmapping[3,iel]=xV[iconV[3,iel]] ; ymapping[3,iel]=yV[iconV[3,iel]]
-           xmapping[4,iel]=xV[iconV[4,iel]] ; ymapping[4,iel]=yV[iconV[4,iel]]
-           xmapping[5,iel]=xV[iconV[5,iel]] ; ymapping[5,iel]=yV[iconV[5,iel]]
-           xmapping[6,iel]=xV[iconV[6,iel]] ; ymapping[6,iel]=yV[iconV[6,iel]]
-           xmapping[7,iel]=xV[iconV[7,iel]] ; ymapping[7,iel]=yV[iconV[7,iel]]
-           xmapping[8,iel]=xV[iconV[8,iel]] ; ymapping[8,iel]=yV[iconV[8,iel]]
-
-    if mapping=='Q3':
-       if not axisymmetric:
-          dtheta=2*np.pi/nelt/3
-       else:
-          dtheta=np.pi/nelt/3
-       for iel in range(0,nel):
-           thetamin=theta[iconV[0,iel]]
-           rmin=rad[iconV[0,iel]]
-           rmax=rad[iconV[2,iel]]
-           counter=0
-           for j in range(0,4):
-               for i in range(0,4):
-                   ttt=thetamin+i*dtheta
-                   rrr=rmin+j*(rmax-rmin)/3
-                   xmapping[counter,iel]=math.sin(ttt)*rrr
-                   ymapping[counter,iel]=math.cos(ttt)*rrr
-                   counter+=1
-
-    if mapping=='Q4':
-       if not axisymmetric:
-          dtheta=2*np.pi/nelt/4
-       else:
-          dtheta=np.pi/nelt/4
-       for iel in range(0,nel):
-           thetamin=theta[iconV[0,iel]]
-           rmin=rad[iconV[0,iel]]
-           rmax=rad[iconV[2,iel]]
-           counter=0
-           for j in range(0,5):
-               for i in range(0,5):
-                   ttt=thetamin+i*dtheta
-                   rrr=rmin+j*(rmax-rmin)/4
-                   xmapping[counter,iel]=math.sin(ttt)*rrr
-                   ymapping[counter,iel]=math.cos(ttt)*rrr
-                   counter+=1
-
-    if mapping=='Q5':
-       if not axisymmetric:
-          dtheta=2*np.pi/nelt/5
-       else:
-          dtheta=np.pi/nelt/5
-       for iel in range(0,nel):
-           thetamin=theta[iconV[0,iel]]
-           rmin=rad[iconV[0,iel]]
-           rmax=rad[iconV[2,iel]]
-           counter=0
-           for j in range(0,6):
-               for i in range(0,6):
-                   ttt=thetamin+i*dtheta
-                   rrr=rmin+j*(rmax-rmin)/5
-                   xmapping[counter,iel]=math.sin(ttt)*rrr
-                   ymapping[counter,iel]=math.cos(ttt)*rrr
-                   counter+=1
-
-    if mapping=='Q6':
-       if not axisymmetric:
-          dtheta=2*np.pi/nelt/6
-       else:
-          dtheta=np.pi/nelt/6
-       for iel in range(0,nel):
-           thetamin=theta[iconV[0,iel]]
-           rmin=rad[iconV[0,iel]]
-           rmax=rad[iconV[2,iel]]
-           counter=0
-           for j in range(0,7):
-               for i in range(0,7):
-                   ttt=thetamin+i*dtheta
-                   rrr=rmin+j*(rmax-rmin)/6
-                   xmapping[counter,iel]=math.sin(ttt)*rrr
-                   ymapping[counter,iel]=math.cos(ttt)*rrr
-                   counter+=1
     if debug:
        np.savetxt('xymapping'+mapping+'.ascii',np.array([xmapping[0,:],ymapping[0,:]]).T)
        export_mapping_points_to_vtu(mapping,mmapping,xmapping,ymapping)
        export_quadrature_points_to_vtu(nqperdim,nqel,qcoords_r,qcoords_s,mapping,\
                                        xmapping,ymapping)
 
-    print("define mapping (%.3fs)" % (timing.time() - start))
+    print("define mapping                  (%.3fs)" % (timing.time() - start))
 
     ###############################################################################
     # compute element center coordinates
-    # compute elemental and nodal viscosity
     ###############################################################################
     start = timing.time()
 
-    xc=np.zeros(nel,dtype=np.float64)
-    yc=np.zeros(nel,dtype=np.float64)
-    thetac=np.zeros(nel,dtype=np.float64)
-    counter=np.zeros(NV,dtype=np.float64)
+    xc,zc,thetac=compute_element_center_coords(nel,mapping,xmapping,ymapping)
 
-    for iel in range(0,nel):
-        rq=0
-        sq=0
-        NNNV=NNN(rq,sq,mapping)
-        xc[iel]=np.dot(NNNV[:],xmapping[:,iel])
-        yc[iel]=np.dot(NNNV[:],ymapping[:,iel])
-        thetac[iel]=np.pi/2-math.atan2(yc[iel],xc[iel])
-    #end for
+    print(" -> xc (m,M) %.2e %.2e " %(np.min(xc),np.max(xc)))
+    print(" -> zc (m,M) %.2e %.2e " %(np.min(zc),np.max(zc)))
+
+    print("compute center coords           (%.3fs)" % (timing.time() - start))
+
+    ###############################################################################
+    # compute elemental and nodal viscosity+density fields for 1st timestep only
+    ###############################################################################
+    start = timing.time()
 
     if istep==0:
-       viscosity_elemental=np.zeros(nel,dtype=np.float64)
-       density_elemental=np.zeros(nel,dtype=np.float64)
-       viscosity_nodal=np.zeros(NV,dtype=np.float64)
-       density_nodal=np.zeros(NV,dtype=np.float64)
-       for iel in range(0,nel):
-           viscosity_elemental[iel]=viscosity(xc[iel],yc[iel],R1,R2,eta_m,eta_model)
-           density_elemental[iel]=density(xc[iel],yc[iel],R1,R2,kk,rho_m,rho_model,\
-                                          exp,rhoblobstar,zblob,Rblob)
-           for i in range(0,mV):
-               counter[iconV[i,iel]]+=1
-               viscosity_nodal[iconV[i,iel]]+=viscosity_elemental[iel]
-               density_nodal[iconV[i,iel]]+=density_elemental[iel]
-           #end for
-       #end for
-       density_nodal/=counter
-       viscosity_nodal/=counter
 
+       density_elemental,density_nodal,viscosity_elemental,viscosity_nodal=\
+       compute_rho_eta_fields(mV,NV,nel,xc,zc,iconV,R1,R2,rho_m,eta_m,eta_model,\
+                              rho_model,exp,rhoblobstar,zblob,Rblob)
+
+
+       print(" -> viscosity_elemental (m,M) %.2e %.2e " %(np.min(viscosity_elemental),np.max(viscosity_elemental)))
+       print(" -> density_elemental   (m,M) %.2e %.2e " %(np.min(density_elemental),np.max(density_elemental)))
+       print(" -> viscosity_nodal     (m,M) %.2e %.2e " %(np.min(viscosity_nodal),np.max(viscosity_nodal)))
+       print(" -> density_nodal       (m,M) %.2e %.2e " %(np.min(density_nodal),np.max(density_nodal)))
 
     if debug:
        np.savetxt('xycenter'+mapping+'.ascii',np.array([xc,yc,density_elemental,viscosity_elemental]).T)
 
-    print("compute center coords & fields (%.3fs)" % (timing.time() - start))
+    print("compute rho+eta fields (%.3fs)" % (timing.time() - start))
 
     ###############################################################################
     # compute area and volume of elements
@@ -1158,7 +898,7 @@ for istep in range(0,nstep):
             if use_elemental_density:
                rhoq[counterq]=density_elemental[iel]
             else:
-               rhoq[counterq]=density(xq,yq,R1,R2,kk,rho_m,rho_model,\
+               rhoq[counterq]=density(xq,yq,R1,R2,rho_m,rho_model,\
                                       exp,rhoblobstar,zblob,Rblob)
 
             if use_elemental_viscosity:
@@ -1180,8 +920,8 @@ for istep in range(0,nstep):
     print("     -> total volume (meas) %.12e | nel= %d" %(vol.sum(),nel))
     print("     -> total volume (anal) %.12e" %(4*np.pi/3*(R2**3-R1**3)))
 
-    print("     -> rhoq (m,M) %.6e %.6e " %(np.min(rhoq),np.max(rhoq)))
-    print("     -> etaq (m,M) %.6e %.6e " %(np.min(etaq),np.max(etaq)))
+    print("     -> rhoq (m,M) %.3e %.3e " %(np.min(rhoq),np.max(rhoq)))
+    print("     -> etaq (m,M) %.3e %.3e " %(np.min(etaq),np.max(etaq)))
     print("     -> total mass (meas) %.12e | nel= %d" %(np.sum(density_elemental*vol),nel))
     
     print("compute elements areas: %.3f s" % (timing.time() - start))
@@ -1795,11 +1535,11 @@ for istep in range(0,nstep):
 
     if exp==0:
        for i in range(0,NV):
-           u_err[i]=u[i]-velocity_x(xV[i],yV[i],R1,R2,kk,exp)
-           v_err[i]=v[i]-velocity_y(xV[i],yV[i],R1,R2,kk,exp)
+           u_err[i]=u[i]-velocity_x(xV[i],yV[i],R1,R2,exp)
+           v_err[i]=v[i]-velocity_y(xV[i],yV[i],R1,R2,exp)
 
        for i in range(0,NP):
-           p_err[i]=p[i]-pressure(xP[i],yP[i],R1,R2,kk,rho_m,g0,exp)
+           p_err[i]=p[i]-pressure(xP[i],yP[i],R1,R2,rho_m,g0,exp)
 
        print("     -> u_err (m,M) %.10e %.10e | nelr= %d" %(np.min(u_err),np.max(u_err),nelr))
        print("     -> v_err (m,M) %.10e %.10e | nelr= %d" %(np.min(v_err),np.max(v_err),nelr))
@@ -1925,9 +1665,9 @@ for istep in range(0,nstep):
             vq=np.dot(NNNV[:],v[iconV[:,iel]])
             qq=np.dot(NNNV[:],q[iconV[:,iel]])
 
-            errv+=((uq-velocity_x(xq,yq,R1,R2,kk,exp))**2+\
-                   (vq-velocity_y(xq,yq,R1,R2,kk,exp))**2)*JxW
-            errq+=(qq-pressure(xq,yq,R1,R2,kk,rho_m,g0,exp))**2*JxW
+            errv+=((uq-velocity_x(xq,yq,R1,R2,exp))**2+\
+                   (vq-velocity_y(xq,yq,R1,R2,exp))**2)*JxW
+            errq+=(qq-pressure(xq,yq,R1,R2,rho_m,g0,exp))**2*JxW
 
             #exx1q=np.dot(NNNV[:],exx1[iconV[:,iel]])
             #eyy1q=np.dot(NNNV[:],eyy1[iconV[:,iel]])
@@ -1954,7 +1694,7 @@ for istep in range(0,nstep):
             vrms+=(uq**2+vq**2)*JxW
 
             pq=np.dot(NNNP[:],p[iconP[:,iel]])
-            errp+=(pq-pressure(xq,yq,R1,R2,kk,rho_m,g0,exp))**2*JxW
+            errp+=(pq-pressure(xq,yq,R1,R2,rho_m,g0,exp))**2*JxW
 
         # end for kq
     # end for iel
@@ -2014,7 +1754,7 @@ for istep in range(0,nstep):
                                 density_elemental,surface_element,cmb_element,iconV)
        export_solutionQ1_to_vtu(istep,exp,NV,nel,xV,yV,vel_unit,u,v,vr,vt,rad,theta,\
                                 exx2,eyy2,exy2,sr2,e_rr2,e_tt2,e_rt2,q,viscosity_nodal,\
-                                density_nodal,iconQ1,g0,R1,R2,kk,rho_m,gravity_model,\
+                                density_nodal,iconQ1,g0,R1,R2,rho_m,gravity_model,\
                                 rhoblob,Rblob,zblob,rho_c)
 
     print("export to vtu file (%.3fs)" % (timing.time() - start))

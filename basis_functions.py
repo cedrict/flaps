@@ -1,7 +1,7 @@
 from numba import jit
 import numpy as np
 
-@jit(nopython=True)
+#@jit(nopython=True)
 def NNN(r,s,space):
     if space=='Q1':
        val = np.zeros(4,dtype=np.float64)

@@ -5,8 +5,9 @@ import numpy as np
 import math as math # <-- remove ?
 
 @jit(nopython=True)
-def velocity_x(x,y,R1,R2,k,exp):
+def velocity_x(x,y,R1,R2,exp):
     if exp==0:
+       k=4
        r=np.sqrt(x*x+y*y)
        theta=math.atan2(y,x)
        A=2.*(math.log(R1)-math.log(R2))/(R2**2*math.log(R1)-R1**2*math.log(R2) )
@@ -23,8 +24,9 @@ def velocity_x(x,y,R1,R2,k,exp):
     return val
 
 @jit(nopython=True)
-def velocity_y(x,y,R1,R2,k,exp):
+def velocity_y(x,y,R1,R2,exp):
     if exp==0:
+       k=4
        r=np.sqrt(x*x+y*y)
        theta=math.atan2(y,x)
        A=2.*(math.log(R1)-math.log(R2))/(R2**2*math.log(R1)-R1**2*math.log(R2) )
@@ -41,9 +43,10 @@ def velocity_y(x,y,R1,R2,k,exp):
     return val
 
 @jit(nopython=True)
-def pressure(x,y,R1,R2,k,rho0,g0,exp):
+def pressure(x,y,R1,R2,rho0,g0,exp):
     r=np.sqrt(x*x+y*y)
     if exp==0:
+       k=4
        theta=math.atan2(y,x)
        A=2.*(math.log(R1)-math.log(R2))/(R2**2*math.log(R1)-R1**2*math.log(R2) )
        B=(R2**2-R1**2)/(R2**2*math.log(R1)-R1**2*math.log(R2) )
@@ -56,8 +59,9 @@ def pressure(x,y,R1,R2,k,rho0,g0,exp):
     return val
 
 @jit(nopython=True)
-def sr_xx(x,y,R1,R2,k,exp):
+def sr_xx(x,y,R1,R2,exp):
     if exp==0:
+       k=4
        r=np.sqrt(x*x+y*y)
        theta=math.atan2(y,x)
        A=2.*(math.log(R1)-math.log(R2))/(R2**2*math.log(R1)-R1**2*math.log(R2) )
@@ -77,8 +81,9 @@ def sr_xx(x,y,R1,R2,k,exp):
     return val
 
 @jit(nopython=True)
-def sr_yy(x,y,R1,R2,k,exp):
+def sr_yy(x,y,R1,R2,exp):
     if exp==0:
+       k=4
        r=np.sqrt(x*x+y*y)
        theta=math.atan2(y,x)
        A=2.*(math.log(R1)-math.log(R2))/(R2**2*math.log(R1)-R1**2*math.log(R2) )
@@ -98,8 +103,9 @@ def sr_yy(x,y,R1,R2,k,exp):
     return val
 
 @jit(nopython=True)
-def sr_xy(x,y,R1,R2,k,exp):
+def sr_xy(x,y,R1,R2,exp):
     if exp==0:
+       k=4
        r=np.sqrt(x*x+y*y)
        theta=math.atan2(y,x)
        A=2.*(math.log(R1)-math.log(R2))/(R2**2*math.log(R1)-R1**2*math.log(R2) )

@@ -10,7 +10,7 @@ import numpy as np
 import math as math
 
 @jit(nopython=True)
-def density(x,y,R1,R2,k,rho0,rho_model,exp,rhoblobstar,yblob,Rblob):
+def density(x,y,R1,R2,rho0,rho_model,exp,rhoblobstar,yblob,Rblob):
 
     #print(x,y,rho0,rho_model)
 
@@ -82,6 +82,7 @@ def density(x,y,R1,R2,k,rho0,rho_model,exp,rhoblobstar,yblob,Rblob):
 
     #-------------------------------------
     if exp==0:
+       k=4
        r=np.sqrt(x*x+y*y)
        theta=math.atan2(y,x)
        A=2.*(math.log(R1)-math.log(R2))/(R2**2*math.log(R1)-R1**2*math.log(R2) )
