@@ -1,0 +1,59 @@
+
+\begin{itemize}
+\item Mesh \& geometry
+\begin{itemize}
+\item {\python nelr}: number of elements in the radial direction  (integer)
+\item {\python nelt}: number of elements in the tangential direction (integer)
+\item {\python xi}: ratio of {\python nelt} and {\python nelr} (integer)
+\item {\python nel}: total number of elements (integer)
+\item {\python NV}: number of velocity nodes (integer)
+\item {\python NP}: number of pressure nodes (integer)
+\item {\python xV,zV}: coordinates of velocity nodes (float64 array size {\python NV}) 
+\item {\python xP,zP}: coordinates of pressure nodes (float64 array size {\python NP}) 
+\item {\python xc,zc}: coordinates of element centers (float64 array size {\python nel}) 
+\item {\python rad,theta}: $r$ and $\theta$ spherical coordinates of velocity nodes  (float64 array size {\python NV}) 
+\item {\python nx,ny}: 
+\item {\python u,v}: velocity field (float64 array size {\python NV})
+\item {\python p}: pressure field (float64 array size {\python NP})
+\item {\python q}: pressure field projected on velocity nodes (float64 array size {\python NV})
+\end{itemize}
+\item Finite elements
+\begin{itemize}
+\item {\python mV}: number of velocity nodes per element (integer)
+\item {\python mP}: number of pressure nodes per element (integer)
+\item {\python ndofV}: number of velocity dof per node (integer) 
+\item {\python ndofP}: number of pressure dof per node (integer) 
+\item {\python NfemV}: total number of velocity dofs (integer) 
+\item {\python NfemP}: total number of pressure dofs  (integer) 
+\item {\python Nfem}: total number of dofs  (integer) 
+\item {\python iconV}: connectivity array for velocity nodes (integer array) 
+\item {\python iconP}: connectivity array for pressure nodes (integer array)
+\item {\python bc\_fix}: (boolean array)
+\item {\python bc\_val}: (float 64 array)
+\end{itemize}
+\item Mapping
+\begin{itemize}
+\item {\python mapping}: type of mapping ({\python 'Q1','Q2','Q3','Q4','Q5','Q6'}) 
+\item {\python mmapping}: number of support points ({\python 4,9,16,25,36,49})
+\item {\python xmapping}: $x$-coordinates of all mapping support points, array ({\python mmapping},{\python nel}) 
+\item {\python zmapping}: $z$-coordinates of all mapping support points, array ({\python mmapping},{\python nel}) 
+\item {\python jcb}: Jacobian matrix (float64 array, size (2,2))
+\item {\python jcbi}: inverse of Jacobian matrix (float64 array, size (2,2))
+\item {\python jcob}: determinant of Jacobian matrix 
+\end{itemize}
+\item Quadrature
+\begin{itemize}
+\item {\python nqperdim}: number of quadrature points in 1D
+\item {\python nqel}: number of quadrature points pr element ({\python nqperdim**2})
+\item {\python qcoords\_r}: $r$-coordinates of the {\python nqel} quadrature points (float 64 array)
+\item {\python qcoords\_s}: $s$-coordinates of the {\python nqel} quadrature points  (float 64 array)
+\item {\python qweights}: associated weights of the {\python nqel} quadrature points  (float 64 array)
+\item {\python xq}: $x$-coordinates of all quadrature points (float64 array size ({\python nel*nqel})) 
+\item {\python zq}: $z$-coordinates of all quadrature points (float64 array size ({\python nel*nqel})) 
+\end{itemize}
+
+\end{itemize}
+
+
+
+

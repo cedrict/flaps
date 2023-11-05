@@ -30,7 +30,7 @@
 \newcommand{\nn}{\nonumber}
 \newcommand{\captionfont}{\tiny}
 \newcommand{\QtwoQone}{$Q_2\times Q_1$}
-\newcommand{\python}{\color{darkgray} \sffamily }
+\newcommand{\python}{\color{teal} \sffamily }
 \newcommand{\K}{{\mathbb{K}}}
 \newcommand{\G}{{\mathbb{G}}}
 
@@ -44,15 +44,25 @@
 \author{C. Thieulot}
 \maketitle
 
+\begin{center}
+\includegraphics[width=5cm]{images/4DDynamicEarth}
+\end{center}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
 \section{Introduction}
 
+This code first started as a stone in the fieldstone project \cite{fieldstone}.
+As it was growing and it appeared that it would be used for different projects
+I decided to take it out and turn it into a standalone code with its own manual.
 
+The code only supports one type of Finite Elements, the $Q_2\times Q_1$ pair, 
+which is stable and commonly used in geodynamics \ref{thba22}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
 \section{The physics}
-
+\input{physics}
 
 %----------------------------------------------------------
 \subsection{About the gravity field}
@@ -77,6 +87,11 @@
 
 %----------------------------------------------------------
 \subsection{Finite elements}
+\input{fem}
+
+%----------------------------------------------------------
+\section{Nomenclature}
+\input{nomenclature}
 
 %----------------------------------------------------------
 \subsection{Mapping}
@@ -90,12 +105,13 @@
 \input{normals}
 
 %----------------------------------------------------------
-\subsection{Free slip}
+\subsection{Implementing free slip boundary conditions}
 \input{free_slip}
 
 %----------------------------------------------------------
 \subsection{Pressure normalisation}
 \input{pressure_normalisation}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
@@ -182,6 +198,7 @@ What I have tried to cure the pb of the weird anomalies at the poles.
 \item aspect with GMG ?
 \item compute moment of inertia
 \item by default code now uses elemental rho and eta. it changes things wrt exp0 benchmark results!
+\item change all eyy and exy to ezz exz
 \end{itemize}
 
 
