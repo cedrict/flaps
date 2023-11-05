@@ -4,7 +4,7 @@ import numpy as np
 
 ###############################################################################
 
-def compute_strain_rate2(nel,mV,NV,iconV,mapping,xmapping,ymapping,u,v):
+def compute_strain_rate2(nel,mV,NV,iconV,mapping,xmapping,zmapping,u,v):
 
     count= np.zeros(NV,dtype=np.int32)  
     exx2 = np.zeros(NV,dtype=np.float64)  
@@ -25,9 +25,9 @@ def compute_strain_rate2(nel,mV,NV,iconV,mapping,xmapping,ymapping,u,v):
             dNNNVdr=dNNNdr(rq,sq,mapping)
             dNNNVds=dNNNds(rq,sq,mapping)
             jcb[0,0]=np.dot(dNNNVdr[:],xmapping[:,iel])
-            jcb[0,1]=np.dot(dNNNVdr[:],ymapping[:,iel])
+            jcb[0,1]=np.dot(dNNNVdr[:],zmapping[:,iel])
             jcb[1,0]=np.dot(dNNNVds[:],xmapping[:,iel])
-            jcb[1,1]=np.dot(dNNNVds[:],ymapping[:,iel])
+            jcb[1,1]=np.dot(dNNNVds[:],zmapping[:,iel])
             jcbi=np.linalg.inv(jcb)
 
             #basis functions

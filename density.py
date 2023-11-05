@@ -9,7 +9,7 @@ from numba import jit
 import numpy as np
 import math as math
 
-@jit(nopython=True)
+#@jit(nopython=True)
 def density(x,y,R1,R2,rho0,rho_model,exp,rhoblobstar,yblob,Rblob):
 
     #print(x,y,rho0,rho_model)

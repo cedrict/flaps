@@ -10,29 +10,29 @@ import numpy as np
 # to use column-major, i.e. F_CONTIGUOUS in python jargon.
 ###############################################################################
     
-def define_mapping(mapping,mmapping,xV,yV,iconV,nel,axisymmetric,rad,theta):
+def define_mapping(mapping,mmapping,xV,zV,iconV,nel,axisymmetric,rad,theta):
 
     xmapping=np.zeros((mmapping,nel),dtype=np.float64,order='F')
     zmapping=np.zeros((mmapping,nel),dtype=np.float64,order='F')
 
     if mapping=='Q1':
        for iel in range(0,nel):
-           xmapping[0,iel]=xV[iconV[0,iel]] ; zmapping[0,iel]=yV[iconV[0,iel]]
-           xmapping[1,iel]=xV[iconV[1,iel]] ; zmapping[1,iel]=yV[iconV[1,iel]]
-           xmapping[2,iel]=xV[iconV[2,iel]] ; zmapping[2,iel]=yV[iconV[2,iel]]
-           xmapping[3,iel]=xV[iconV[3,iel]] ; zmapping[3,iel]=yV[iconV[3,iel]]
+           xmapping[0,iel]=xV[iconV[0,iel]] ; zmapping[0,iel]=zV[iconV[0,iel]]
+           xmapping[1,iel]=xV[iconV[1,iel]] ; zmapping[1,iel]=zV[iconV[1,iel]]
+           xmapping[2,iel]=xV[iconV[2,iel]] ; zmapping[2,iel]=zV[iconV[2,iel]]
+           xmapping[3,iel]=xV[iconV[3,iel]] ; zmapping[3,iel]=zV[iconV[3,iel]]
 
     if mapping=='Q2':
        for iel in range(0,nel):
-           xmapping[0,iel]=xV[iconV[0,iel]] ; zmapping[0,iel]=yV[iconV[0,iel]]
-           xmapping[1,iel]=xV[iconV[1,iel]] ; zmapping[1,iel]=yV[iconV[1,iel]]
-           xmapping[2,iel]=xV[iconV[2,iel]] ; zmapping[2,iel]=yV[iconV[2,iel]]
-           xmapping[3,iel]=xV[iconV[3,iel]] ; zmapping[3,iel]=yV[iconV[3,iel]]
-           xmapping[4,iel]=xV[iconV[4,iel]] ; zmapping[4,iel]=yV[iconV[4,iel]]
-           xmapping[5,iel]=xV[iconV[5,iel]] ; zmapping[5,iel]=yV[iconV[5,iel]]
-           xmapping[6,iel]=xV[iconV[6,iel]] ; zmapping[6,iel]=yV[iconV[6,iel]]
-           xmapping[7,iel]=xV[iconV[7,iel]] ; zmapping[7,iel]=yV[iconV[7,iel]]
-           xmapping[8,iel]=xV[iconV[8,iel]] ; zmapping[8,iel]=yV[iconV[8,iel]]
+           xmapping[0,iel]=xV[iconV[0,iel]] ; zmapping[0,iel]=zV[iconV[0,iel]]
+           xmapping[1,iel]=xV[iconV[1,iel]] ; zmapping[1,iel]=zV[iconV[1,iel]]
+           xmapping[2,iel]=xV[iconV[2,iel]] ; zmapping[2,iel]=zV[iconV[2,iel]]
+           xmapping[3,iel]=xV[iconV[3,iel]] ; zmapping[3,iel]=zV[iconV[3,iel]]
+           xmapping[4,iel]=xV[iconV[4,iel]] ; zmapping[4,iel]=zV[iconV[4,iel]]
+           xmapping[5,iel]=xV[iconV[5,iel]] ; zmapping[5,iel]=zV[iconV[5,iel]]
+           xmapping[6,iel]=xV[iconV[6,iel]] ; zmapping[6,iel]=zV[iconV[6,iel]]
+           xmapping[7,iel]=xV[iconV[7,iel]] ; zmapping[7,iel]=zV[iconV[7,iel]]
+           xmapping[8,iel]=xV[iconV[8,iel]] ; zmapping[8,iel]=zV[iconV[8,iel]]
 
     if mapping=='Q3':
        if not axisymmetric:

@@ -9,7 +9,7 @@
 from numba import jit
 import numpy as np
 
-@jit(nopython=True)
+#@jit(nopython=True)
 def viscosity(x,y,R1,R2,eta_m,eta_model):
        
     depth=R2-np.sqrt(x**2+y**2)
