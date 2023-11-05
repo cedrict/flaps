@@ -93,7 +93,7 @@ ndofP=1  # number of pressure degrees of freedom
 # reading parameters from command line, or not
 ###############################################################################
 
-if int(len(sys.argv) == 14):
+if int(len(sys.argv) == 12):
    exp         = int(sys.argv[1])
    nelr        = int(sys.argv[2])
    visu        = int(sys.argv[3])
@@ -105,21 +105,18 @@ if int(len(sys.argv) == 14):
    zblob       = float(sys.argv[9])
    Rblob       = float(sys.argv[10])
    etalithstar = float(sys.argv[11])
-   compute_g   = int(sys.argv[12])
-   nel_phi     = int(sys.argv[13])
    if mapping==1: mapping='Q1'
    if mapping==2: mapping='Q2'
    if mapping==3: mapping='Q3'
    if mapping==4: mapping='Q4'
    if mapping==5: mapping='Q5'
    if mapping==6: mapping='Q6'
-   compute_gravity=(compute_g==1)
    print(sys.argv)
 
 else:
    # exp=0: cyl benchmark
    # exp=1: aquarium
-   exp         = 0
+   exp         = 1
    nelr        = 32 # Q1 cells!
    visu        = 1
    nqperdim    = 3
@@ -130,8 +127,6 @@ else:
    zblob       = 4900e3
    Rblob       = 400e3
    etalithstar = 1
-   compute_gravity=False
-   nel_phi     = 100
 
 ###########################################################
 
@@ -168,7 +163,7 @@ else:
    velunit='cm/year'
    nstep=1
    rhoc=6000
-   gravity_model=2
+   gravity_model=0
    surface_free_slip=True
    bottom_free_slip=False # not implemented
    use_elemental_density=True
@@ -177,6 +172,8 @@ else:
    self_gravitation=False
    solve_stokes=True
    dt=50*year
+   compute_gravity=False
+   nel_phi     = 100
 
 debug=False
 compute_sr1=True
@@ -1474,13 +1471,12 @@ for istep in range(0,nstep):
     start = timing.time()
 
     if visu==1:
-
-       export_solution_to_vtu(istep,NV,nel,xV,yV,iconV,u,v,vr,vt,q,vel_unit,rad,theta,\
-                              nx,ny,sr1,sr2,sr3,density_nodal,density_elemental,\
-                              viscosity_nodal,viscosity_elemental,
-                              R1,R2,rho_m,gravity_model,\
-                              g0,rhoc,rhoblob,Rblob,zblob,hull,inner_element,outer_element,
-                              innerQ2,outerQ2,bc_fix,exp,e_rr2,e_tt2,e_rt2)
+       export_solution_to_vtu(istep,NV,nel,xV,yV,iconV,u,v,vr,vt,q,vel_unit,rad,\
+                              theta,nx,ny,sr1,sr2,sr3,density_nodal,density_elemental,\
+                              viscosity_nodal,viscosity_elemental,R1,R2,rho_m,\
+                              gravity_model,g0,rhoc,rhoblob,Rblob,zblob,hull,\
+                              inner_element,outer_element,innerQ2,outerQ2,bc_fix,\
+                              exp,e_rr2,e_tt2,e_rt2)
 
     print("export to vtu file........................(%.3fs)" % (timing.time() - start))
 
