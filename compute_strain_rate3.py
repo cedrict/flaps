@@ -1,20 +1,25 @@
 ###############################################################################
 from basis_functions import *
 import numpy as np
+from scipy.sparse import lil_matrix
+import scipy.sparse as sps
 
 ###############################################################################
 
-def compute_strain_rate3(nel,mV,NV,nqel,iconV,mapping,xmapping,zmapping,u,v):
+def compute_strain_rate3(nel,mV,NV,nqel,iconV,mapping,xmapping,zmapping,u,v,\
+                         qcoords_r,qcoords_s,qweights):
 
     exx3=np.zeros(NV,dtype=np.float64)  
     eyy3=np.zeros(NV,dtype=np.float64)  
     exy3=np.zeros(NV,dtype=np.float64)  
-
     M_mat=lil_matrix((NV,NV),dtype=np.float64)
     rhsLxx=np.zeros(NV,dtype=np.float64)
     rhsLyy=np.zeros(NV,dtype=np.float64)
     rhsLxy=np.zeros(NV,dtype=np.float64)
     rhsLyx=np.zeros(NV,dtype=np.float64)
+    jcb=np.zeros((2,2),dtype=np.float64)
+    dNNNVdx=np.zeros(mV,dtype=np.float64)
+    dNNNVdy=np.zeros(mV,dtype=np.float64)
 
     for iel in range(0,nel):
 
@@ -98,4 +103,5 @@ def compute_strain_rate3(nel,mV,NV,nqel,iconV,mapping,xmapping,zmapping,u,v):
     exy3[:]=0.5*(Lxy3[:]+Lyx3[:])
 
     return exx3,eyy3,exy3
+
 ###############################################################################
