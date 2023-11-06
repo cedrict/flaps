@@ -9,7 +9,6 @@
 ###############################################################################
 
 import numpy as np
-import math as math
 import sys as sys
 import scipy
 import scipy.sparse as sps
@@ -116,7 +115,7 @@ if int(len(sys.argv) == 12):
 else:
    # exp=0: cyl benchmark
    # exp=1: aquarium
-   exp         = 1
+   exp         = 0
    nelr        = 32 # Q1 cells!
    visu        = 1
    nqperdim    = 3
@@ -176,8 +175,8 @@ else:
    nel_phi     = 100
 
 debug=False
-compute_sr1=True
-compute_sr3=True
+compute_sr1=False
+compute_sr3=False
 
 ###############################################################################
 ###############################################################################
@@ -511,7 +510,10 @@ Nfem=NfemV+NfemP # total number of dofs
 
 h_r=(R2-R1)/nelr # radial resolution
 
-total_volume=4*np.pi/3*(R2**3-R1**3)
+if axisymmetric:
+   total_volume=4*np.pi/3*(R2**3-R1**3)
+else:
+   total_volume=np.pi*(R2**2-R1**2)
 
 rhoblob=rhoblobstar*rho_m
 
@@ -523,14 +525,15 @@ print('  mapping=',mapping)
 print('  axisymmetric=',axisymmetric)
 print('  exp=',exp)
 print('  xi=',xi)
+print('  h_r=',h_r)
 print('  eta_model=',eta_model)
 print('  rho_model=',rho_model)
-print('  rhoblob=',rhoblob)
-print('  Rblob=',Rblob)
-print('  zblob=',zblob)
 print('  compute_gravity=',compute_gravity)
-print('  nel_phi=',nel_phi)
-print('  h_r=',h_r)
+if exp>0:
+   print('  rhoblob=',rhoblob)
+   print('  Rblob=',Rblob)
+   print('  zblob=',zblob)
+   print('  nel_phi=',nel_phi)
 print('  -------------------')
 
 print("compute nelr,nelt,nel.....................(%.3fs)" % (timing.time() - start))
@@ -828,7 +831,8 @@ for istep in range(0,nstep):
     if mapping=='Q5': mmapping=36
     if mapping=='Q6': mmapping=49
 
-    xmapping,zmapping=define_mapping(mapping,mmapping,xV,yV,iconV,nel,axisymmetric,rad,theta)
+    xmapping,zmapping=define_mapping(mapping,mmapping,xV,yV,iconV,nel,\
+                                     axisymmetric,rad,theta,nelt)
 
     print(spacing+" -> xmapping (m,M) %.2e %.2e " %(np.min(xmapping),np.max(xmapping)))
     print(spacing+" -> zmapping (m,M) %.2e %.2e " %(np.min(zmapping),np.max(zmapping)))
@@ -935,7 +939,7 @@ for istep in range(0,nstep):
     else:
        print(spacing+" -> area (m,M) %.6e %.6e " %(np.min(area),np.max(area)))
        print(spacing+" -> total area (meas) %.12e | nel= %d" %(area.sum(),nel))
-       print(spacing+" -> total area (anal) %e " %(np.pi*(R2**2-R1**2)))
+       print(spacing+" -> total area (anal) %e " %(total_volume))
 
     print(spacing+" -> rhoq (m,M) %.3e %.3e " %(np.min(rhoq),np.max(rhoq)))
     print(spacing+" -> etaq (m,M) %.3e %.3e " %(np.min(etaq),np.max(etaq)))
@@ -1196,18 +1200,6 @@ for istep in range(0,nstep):
     print("reshape solution..........................(%.3fs)" % (timing.time() - start))
 
     ###############################################################################
-    # compute elemental pressure
-    ###############################################################################
-    start = timing.time()
-
-    pc=np.zeros(nel,dtype=np.float64)
-
-    for iel in range(0,nel):
-        pc[iel]=np.sum(p[iconP[0:4,iel]])/4
-
-    print("compute elemental pressure................(%.3fs)" % (timing.time() - start))
-
-    ###############################################################################
     # compute strain rate - center to nodes - method 1
     ###############################################################################
     start = timing.time()
@@ -1250,6 +1242,28 @@ for istep in range(0,nstep):
        np.savetxt('strainrate'+str(istep)+'.ascii',np.array([xV,yV,exx2,eyy2,exy2]).T)
 
     print("compute strain rate meth-2................(%.3fs)" % (timing.time() - start))
+
+    ###############################################################################
+    # compute strain rate - via mass matrix - method 3
+    ###############################################################################
+    start = timing.time()
+
+    sr3=np.zeros(NV,dtype=np.float64)  
+
+    if compute_sr3:
+
+       exx3,eyy3,exy3=compute_strain_rate3(nel,mV,NV,nqel,iconV,mapping,xmapping,zmapping,u,v,\
+                                           qcoords_r,qcoords_s,qweights)
+
+       print(spacing+" -> exx3 (m,M) %e %e " %(np.min(exx3),np.max(exx3)))
+       print(spacing+" -> eyy3 (m,M) %e %e " %(np.min(eyy3),np.max(eyy3)))
+       print(spacing+" -> exy3 (m,M) %e %e " %(np.min(exy3),np.max(exy3)))
+
+       sr3[:]=np.sqrt(0.5*(exx3[:]**2+eyy3[:]**2)+exy3[:]**2)
+       np.savetxt('sr3_R1.ascii',np.array([xV[0:nnt],yV[0:nnt],sr3[0:nnt],theta[0:nnt]]).T)
+       np.savetxt('sr3_R2.ascii',np.array([xV[outerQ2],yV[outerQ2],sr3[outerQ2],theta[outerQ2]]).T)
+
+    print("compute strain rate meth-3................(%.3fs)" % (timing.time() - start))
 
     ###############################################################################
     # project pressure onto Q2 mesh
@@ -1295,27 +1309,6 @@ for istep in range(0,nstep):
     print("compute strain rate in sph. coords........(%.3fs)" % (timing.time() - start))
 
     ###############################################################################
-    ###############################################################################
-    start = timing.time()
-
-    sr3=np.zeros(NV,dtype=np.float64)  
-
-    if compute_sr3:
-
-       exx3,eyy3,exy3=compute_strain_rate3(nel,mV,NV,nqel,iconV,mapping,xmapping,zmapping,u,v,\
-                                           qcoords_r,qcoords_s,qweights)
-
-       print(spacing+" -> exx3 (m,M) %e %e " %(np.min(exx3),np.max(exx3)))
-       print(spacing+" -> eyy3 (m,M) %e %e " %(np.min(eyy3),np.max(eyy3)))
-       print(spacing+" -> exy3 (m,M) %e %e " %(np.min(exy3),np.max(exy3)))
-
-       sr3[:]=np.sqrt(0.5*(exx3[:]**2+eyy3[:]**2)+exy3[:]**2)
-       np.savetxt('sr3_R1.ascii',np.array([xV[0:nnt],yV[0:nnt],sr3[0:nnt],theta[0:nnt]]).T)
-       np.savetxt('sr3_R2.ascii',np.array([xV[outerQ2],yV[outerQ2],sr3[outerQ2],theta[outerQ2]]).T)
-
-    print("compute strain rate meth-3................(%.3fs)" % (timing.time() - start))
-
-    ###############################################################################
     # normalise pressure
     # note that the integration could be improved (I currently only sample the 
     # pressure in 1 point in the middle of the edge)
@@ -1350,44 +1343,12 @@ for istep in range(0,nstep):
        q-=poffset
        p-=poffset
 
-       poffset=0
-       for iel in range(0,nel):
-           if outer_element[iel]:
-              dtheta=theta[iconV[2,iel]]-theta[iconV[3,iel]]
-              poffset+=np.sin((theta[iconV[2,iel]]+theta[iconV[3,iel]])/2)*dtheta * 2*np.pi*R2**2 * pc[iel]
-       poffset/=4*np.pi*R2**2
-       pc-=poffset
-
     print(spacing+" -> p (m,M) %e %e " %(np.min(p),np.max(p)))
     print(spacing+" -> q (m,M) %e %e " %(np.min(q),np.max(q)))
 
     if debug: np.savetxt('pressure.ascii',np.array([xP,yP,p]).T,header='# x,y,p')
 
     print("normalise pressure........................(%.3fs)" % (timing.time() - start))
-
-    ###############################################################################
-    # compute nodal error fields (for plotting)
-    ###############################################################################
-    start = timing.time()
-
-    if exp==0:
-
-       u_err = np.zeros(NV,dtype=np.float64) 
-       v_err = np.zeros(NV,dtype=np.float64)    
-       p_err = np.zeros(NP,dtype=np.float64)    
-
-       for i in range(0,NV):
-           u_err[i]=u[i]-velocity_x(xV[i],yV[i],R1,R2,exp)
-           v_err[i]=v[i]-velocity_y(xV[i],yV[i],R1,R2,exp)
-
-       for i in range(0,NP):
-           p_err[i]=p[i]-pressure(xP[i],yP[i],R1,R2,rho_m,g0,exp)
-
-       print(spacing+" -> u_err (m,M) %.10e %.10e | nelr= %d" %(np.min(u_err),np.max(u_err),nelr))
-       print(spacing+" -> v_err (m,M) %.10e %.10e | nelr= %d" %(np.min(v_err),np.max(v_err),nelr))
-       print(spacing+" -> p_err (m,M) %.10e %.10e | nelr= %d" %(np.min(p_err),np.max(p_err),nelr))
-
-    print("compute error fields......................(%.3fs)" % (timing.time() - start))
 
     ###############################################################################
     # since I have zeroed the the spherical components of the strain rate for x<0
@@ -1487,8 +1448,6 @@ for istep in range(0,nstep):
        (nelr,np.min(vr)/vel_unit,np.max(vr)/vel_unit))
        print(spacing+" -> EARTH4D | nelr= %d v_t %.5f %.5f " %\
        (nelr,np.min(vt)/vel_unit,np.max(vt)/vel_unit))
-       print(spacing+" -> EARTH4D | nelr= %d v_rms %.5f " %\
-       (nelr,vrms/vel_unit))
 
     ###############################################################################
     # M is in (x,z) y=0 plane, so yM=0

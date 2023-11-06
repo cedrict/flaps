@@ -30,7 +30,7 @@ for l in 32 48 64 96 128 192 256; do
 
     grep EARTH4D opla_${l}_${xi} | grep v_r >> v_r_EARTH4D.ascii
     grep EARTH4D opla_${l}_${xi} | grep v_t >> v_t_EARTH4D.ascii
-    grep EARTH4D opla_${l}_${xi} | grep v_rms >> v_rms_EARTH4D.ascii
+    grep vrms opla_${l}_${xi} >> vrms_EARTH4D.ascii
 
 done
 
