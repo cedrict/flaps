@@ -9,6 +9,7 @@ def compute_errors(nel,nqel,mapping,xmapping,zmapping,qcoords_r,qcoords_s,qweigh
                    R1,R2,rho_m,g0,exp,u,v,p,axisymmetric,iconV,iconP,total_volume):
 
     jcb=np.zeros((2,2),dtype=np.float64)
+
     vrms=0.
     errv=0.
     errp=0.

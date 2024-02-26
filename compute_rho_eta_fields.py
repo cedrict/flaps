@@ -7,6 +7,7 @@ from viscosity import *
 # this function computes the density and viscosity in the middle of the element
 # and project these values onto the velocity nodes (for visualisation 
 # purposes only!)
+###############################################################################
 
 def compute_rho_eta_fields(mV,NV,nel,xc,zc,iconV,R1,R2,rho_m,eta_m,eta_model,\
                            rho_model,exp,rhoblobstar,zblob,Rblob):

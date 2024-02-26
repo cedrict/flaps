@@ -1,5 +1,6 @@
 ###############################################################################
 import numpy as np
+import math as math
 
 ###############################################################################
 # Q1 nodes for mapping are corners of Q2 basis functions
@@ -10,7 +11,7 @@ import numpy as np
 # to use column-major, i.e. F_CONTIGUOUS in python jargon.
 ###############################################################################
     
-def define_mapping(mapping,mmapping,xV,zV,iconV,nel,axisymmetric,rad,theta):
+def define_mapping(mapping,mmapping,xV,zV,iconV,nel,axisymmetric,rad,theta,nelt):
 
     xmapping=np.zeros((mmapping,nel),dtype=np.float64,order='F')
     zmapping=np.zeros((mmapping,nel),dtype=np.float64,order='F')

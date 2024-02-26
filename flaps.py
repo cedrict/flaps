@@ -358,6 +358,8 @@ print("quadrature setup..........................(%.3fs)" % (timing.time() - sta
 ###############################################################################
 start = timing.time()
 
+#xV,yV,rad,theta=mesh_nodes(nelr,nelt,axisymmetric,R1,R2)
+
 if not axisymmetric:
 
    nelt=xi*nelr 
@@ -617,26 +619,6 @@ else:
    #end for
 
 print("connectivity array........................(%.3fs)" % (timing.time() - start))
-
-###############################################################################
-
-#for iel in range(0,nel):
-#    r0=rad[iconV[0,iel]]
-#    r3=rad[iconV[3,iel]]
-#    r8=rad[iconV[8,iel]]
-    #center 0
-    #xV[iconV[8,iel]]=0.25*(xV[iconV[0,iel]]+xV[iconV[1,iel]]+xV[iconV[2,iel]]+xV[iconV[3,iel]])
-    #yV[iconV[8,iel]]=0.25*(yV[iconV[0,iel]]+yV[iconV[1,iel]]+yV[iconV[2,iel]]+yV[iconV[3,iel]])
-    #center 1
-    #xV[iconV[8,iel]]=0.125*(xV[iconV[0,iel]]+xV[iconV[1,iel]]+xV[iconV[2,iel]]+xV[iconV[3,iel]]+\
-    #                        xV[iconV[4,iel]]+xV[iconV[5,iel]]+xV[iconV[6,iel]]+xV[iconV[7,iel]])
-    #yV[iconV[8,iel]]=0.125*(yV[iconV[0,iel]]+yV[iconV[1,iel]]+yV[iconV[2,iel]]+yV[iconV[3,iel]]+\
-    #                        yV[iconV[4,iel]]+yV[iconV[5,iel]]+yV[iconV[6,iel]]+yV[iconV[7,iel]])
-    #center 2
-    #xV[iconV[8,iel]]=0.0625*(xV[iconV[0,iel]]+xV[iconV[1,iel]]+xV[iconV[2,iel]]+xV[iconV[3,iel]]+\
-    #                         3*xV[iconV[4,iel]]+3*xV[iconV[5,iel]]+3*xV[iconV[6,iel]]+3*xV[iconV[7,iel]])
-    #yV[iconV[8,iel]]=0.0625*(yV[iconV[0,iel]]+yV[iconV[1,iel]]+yV[iconV[2,iel]]+yV[iconV[3,iel]]+\
-    #                         3*yV[iconV[4,iel]]+3*yV[iconV[5,iel]]+3*yV[iconV[6,iel]]+3*yV[iconV[7,iel]])
 
 ###############################################################################
 #now that I have both connectivity arrays I can easily build xP,yP (Q1 space)
@@ -946,7 +928,7 @@ for istep in range(0,nstep):
     print(spacing+" -> massq (m,M) %.3e %.3e " %(np.min(massq),np.max(massq)))
     print(spacing+" -> total mass (meas) %.12e | nel= %d" %(np.sum(density_elemental*vol),nel))
     
-    print("sanity check..............................(%.3fs)" % (timing.time() - start))
+    print("sanity check.............................. %.3fs  | %d" % (timing.time()-start,Nfem))
 
     ###############################################################################
     # build FE matrix
@@ -1151,8 +1133,7 @@ for istep in range(0,nstep):
 
     #end for iel
 
-
-    print("build FE matrixs & rhs....................(%.3fs)" % (timing.time() - start))
+    print("build FE system........................... %.3fs  | %d" % (timing.time()-start,Nfem))
 
     ###############################################################################
     # solve system
@@ -1160,18 +1141,19 @@ for istep in range(0,nstep):
     start = timing.time()
 
     if solve_stokes:
-
        rhs=np.zeros(Nfem,dtype=np.float64)
        rhs[0:NfemV]=f_rhs
        rhs[NfemV:NfemV+NfemP]=h_rhs
        sparse_matrix = sparse.coo_matrix((V,(I,J)),shape=(Nfem,Nfem)).tocsr()
-       sol=sps.linalg.spsolve(sparse_matrix,rhs)
+       #sol=sps.linalg.spsolve(sparse_matrix,rhs)
+
+       #sol = scipy.sparse.linalg.gmres(sparse_matrix, rhs, restart=2000,tol=1e-8)[0]
+       sol = scipy.sparse.linalg.lgmres(sparse_matrix, rhs,atol=1e-16,tol=1e-5)[0]
 
     else:
-
        sol=np.zeros(Nfem,dtype=np.float64)  
 
-    print("solving system............................(%.3fs)" % (timing.time() - start))
+    print("solving system............................ %.3fs  | %d" % (timing.time()-start,Nfem))
 
     ###############################################################################
     # put solution into separate x,y velocity arrays

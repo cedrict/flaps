@@ -58,4 +58,5 @@ def compute_strain_rate2(nel,mV,NV,iconV,mapping,xmapping,zmapping,u,v):
     eyy2/=count
 
     return exx2,eyy2,exy2
+
 ###############################################################################

@@ -1,0 +1,35 @@
+
+\begin{verbatim}
+read input parameters
+read planet data
+make Q2 and Q1 mesh
+flag boundary nodes & elts
+compute normal vectors
+define boundary conditions
+build arrays for fast assembly
+          |
+--------------------------------- time
+|         |                     | stepping
+| compute mapping               |
+| compute elt center coords     |
+| compute rho and eta in elts   |
+| sanity check                  |
+| build FE matrix               |
+| solve linear system           |
+| split solution                |
+| compute strain rate           |
+| project pressure on Q2        |
+| convert sr to sph. coords.    |
+| normalise pressure            |
+| compute dyn. topography       |
+| export results on boundaries  |
+| compute L2 error              |
+| compute g inside (opt)        |
+| export solution to vtu        |
+| compute gravity outside (opt) |
+| mesh advection                |
+|         |                     |
+---------------------------------
+          | 
+\end{verbatim}
+

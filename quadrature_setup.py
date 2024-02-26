@@ -1,16 +1,21 @@
+###############################################################################
 import numpy as np
+
+###############################################################################
 
 def quadrature_setup(nqperdim):
 
-
+   #--------------
    if nqperdim==2:
       coords=[-1/np.sqrt(3),1/np.sqrt(3)]
       weights=[1,1]
 
+   #--------------
    if nqperdim==3:
       coords=[-np.sqrt(3./5.),0.,np.sqrt(3./5.)]
       weights=[5./9.,8./9.,5./9.]
 
+   #--------------
    if nqperdim==4:
       qc4a=np.sqrt(3./7.+2./7.*np.sqrt(6./5.))
       qc4b=np.sqrt(3./7.-2./7.*np.sqrt(6./5.))
@@ -19,6 +24,7 @@ def quadrature_setup(nqperdim):
       coords=[-qc4a,-qc4b,qc4b,qc4a]
       weights=[qw4a,qw4b,qw4b,qw4a]
 
+   #--------------
    if nqperdim==5:
       qc5a=np.sqrt(5.+2.*np.sqrt(10./7.))/3.
       qc5b=np.sqrt(5.-2.*np.sqrt(10./7.))/3.
@@ -29,6 +35,7 @@ def quadrature_setup(nqperdim):
       coords=[-qc5a,-qc5b,qc5c,qc5b,qc5a]
       weights=[qw5a,qw5b,qw5c,qw5b,qw5a]
 
+   #--------------
    if nqperdim==6:
       coords=[-0.932469514203152,-0.661209386466265,\
               -0.238619186083197,+0.238619186083197,\
@@ -64,8 +71,4 @@ def quadrature_setup(nqperdim):
 
    return nqel,qcoords_r,qcoords_s,qweights
 
-
-
-
-
-
+###############################################################################

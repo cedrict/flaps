@@ -10,8 +10,9 @@ from viscosity import *
 ###############################################################################
 
 
-def export_solution_to_vtu(istep,NV,nel,xV,zV,iconV,u,v,vr,vt,q,vel_unit,rad,theta,nx,nz,sr1,sr2,sr3,\
-                           density_nodal,density_elemental,viscosity_nodal,viscosity_elemental,R1,R2,rho_m,gravity_model,\
+def export_solution_to_vtu(istep,NV,nel,xV,zV,iconV,u,v,vr,vt,q,vel_unit,rad,\
+                           theta,nx,nz,sr1,sr2,sr3,density_nodal,density_elemental,\
+                           viscosity_nodal,viscosity_elemental,R1,R2,rho_m,gravity_model,\
                            g0,rhoc,rhoblob,Rblob,zblob,hull,inner_element,outer_element,\
                            innerQ2,outerQ2,bc_fix,exp,e_rr2,e_tt2,e_rt2):
 
@@ -227,18 +228,6 @@ def export_solution_to_vtu(istep,NV,nel,xV,zV,iconV,u,v,vr,vt,q,vel_unit,rad,the
    vtufile.write("</UnstructuredGrid>\n")
    vtufile.write("</VTKFile>\n")
    vtufile.close()
-
-   #--
-   #if compute_sr1:
-   #   vtufile.write("<DataArray type='Float32' Name='sr1' Format='ascii'> \n")
-   #   for i in range(0,NV):
-   #       vtufile.write("%e \n" %sr1[i])
-   #   vtufile.write("</DataArray>\n")
-   #if compute_sr3:
-   #   vtufile.write("<DataArray type='Float32' Name='sr3' Format='ascii'> \n")
-   #   for i in range(0,NV):
-   #       vtufile.write("%e \n" %sr3[i])
-   #   vtufile.write("</DataArray>\n")
 
 ###############################################################################
 

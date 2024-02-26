@@ -45,8 +45,14 @@
 \maketitle
 
 \begin{center}
-\includegraphics[width=5cm]{images/4DDynamicEarth}
+\includegraphics[height=5cm]{images/4DDynamicEarth}
+\includegraphics[height=5cm]{images/UU}
+\includegraphics[height=5cm]{images/tudelft}
 \end{center}
+
+\newpage
+
+\tableofcontents
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
@@ -57,7 +63,7 @@ As it was growing and it appeared that it would be used for different projects
 I decided to take it out and turn it into a standalone code with its own manual.
 
 The code only supports one type of Finite Elements, the $Q_2\times Q_1$ pair, 
-which is stable and commonly used in geodynamics \ref{thba22}.
+which is stable and commonly used in geodynamics \cite{thba22}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
@@ -90,7 +96,7 @@ which is stable and commonly used in geodynamics \ref{thba22}.
 \input{fem}
 
 %----------------------------------------------------------
-\section{Nomenclature}
+\subsection{Nomenclature}
 \input{nomenclature}
 
 %----------------------------------------------------------
@@ -105,12 +111,29 @@ which is stable and commonly used in geodynamics \ref{thba22}.
 \input{normals}
 
 %----------------------------------------------------------
+\subsection{Solving the linear system}
+\input{solving}
+
+%----------------------------------------------------------
+\subsection{Computing velocity derivatives}
+\input{strainrate}
+
+%----------------------------------------------------------
 \subsection{Implementing free slip boundary conditions}
 \input{free_slip}
 
 %----------------------------------------------------------
 \subsection{Pressure normalisation}
 \input{pressure_normalisation}
+
+%----------------------------------------------------------
+\newpage
+\subsection{Code structure}
+\input{structure}
+
+
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -157,8 +180,10 @@ and we will monitor the computed area/volume, the root mean square velocity and 
 \subsection{Computing volume/mass}
 \input{volumes}
 
-
+%----------------------------------------------------
 \subsection{Annulus convection manufactured solution}
+\input{benchmark}
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -211,6 +236,8 @@ What I have tried to cure the pb of the weird anomalies at the poles.
 \item compute moment of inertia
 \item by default code now uses elemental rho and eta. it changes things wrt exp0 benchmark results!
 \item change all eyy and exy to ezz exz
+\item difference between surfaceV and outerQ2 ?!?
+\item remove hrhs and frhs make it rhs
 \end{itemize}
 
 
