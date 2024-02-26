@@ -1,0 +1,88 @@
+#
+set term pdf enhanced font "times,12pt"
+set grid
+set key outside
+
+Ggrav=6.67e-11
+R1=3400e3
+R2=6400e3
+rhoc=6000*4*pi*Ggrav *0
+rhom=4000*4*pi*Ggrav
+
+C=R1**3/3*(rhoc-rhom)
+E=rhom/3*(R2**3-R1**3)+R1**3/3*rhoc
+D=-R2**2/2*rhom
+B=0.5*(R1**2-R2**2)*rhom-0.5*R1**2*rhoc
+
+gc(x)=rhoc/3*x
+gm(x)=rhom/3*x+C/x**2
+ga(x)=E/x**2
+
+Uc(x)=rhoc/6*x**2+B
+Um(x)=rhom/6*x**2-C/x+D
+Ua(x)=-E/x
+
+U(x)= x<R1? Uc(x) : x<R2? Um(x) : Ua(x)
+g(x)= x<R1? gc(x) : x<R2? gm(x) : ga(x)
+
+set arrow from 3400e3, graph 0 to 3400e3, graph 1 nohead dt 2
+set arrow from 6400e3, graph 0 to 6400e3, graph 1 nohead dt 2
+
+set xlabel 'r'
+
+set ylabel 'g(r)'
+set output 'g.pdf'
+plot[0:3*R2][0:8]\
+gc(x) w l t 'g_c',\
+gm(x) w l t 'g_m',\
+ga(x) w l t 'g_a',\
+g(x) w l lw 3 lt -1 t 'g(r)'
+
+set ylabel 'U(r)'
+set output 'U.pdf'
+plot[0:3*R2][-6e7:1e7]\
+Uc(x) w l t 'U_c',\
+Um(x) w l t 'U_m',\
+Ua(x) w l t 'U_a',\
+U(x) w l lw 3 lt -1 t 'U(r)'
+
+set title 'nel phi=100'
+set output 'g_100.pdf'
+plot[0.5*R1:1.5*R2][0:7]\
+g(x) w l lt -1 t 'g(r)',\
+'gravity_self_100.ascii' u (sqrt($1**2+$2**2)):6 w lp ps .3 notitle 
+
+set title 'nel phi=200'
+set output 'g_200.pdf'
+plot[0.5*R1:1.5*R2][0:7]\
+g(x) w l lt -1 t 'g(r)',\
+'gravity_self_200.ascii' u (sqrt($1**2+$2**2)):6 w lp ps .3 notitle 
+
+set title 'nel phi=300'
+set output 'g_300.pdf'
+plot[0.5*R1:1.5*R2][0:7]\
+g(x) w l lt -1 t 'g(r)',\
+'gravity_self_300.ascii' u (sqrt($1**2+$2**2)):6 w lp ps .3 notitle 
+
+set title 'nel phi=400'
+set output 'g_400.pdf'
+plot[2e6:8e6][0:7]\
+g(x) w l lt -1 t 'g(r)',\
+'gravity_self_400.ascii' u (sqrt($1**2+$2**2)):6 w lp ps .3 notitle 
+
+set title 'nel phi=500'
+set output 'g_500.pdf'
+plot[2e6:8e6][0:7]\
+g(x) w l lt -1 t 'g(r)',\
+'gravity_self_500.ascii' u (sqrt($1**2+$2**2)):6 w lp ps .3 notitle 
+
+
+
+
+
+
+
+
+
+
+
