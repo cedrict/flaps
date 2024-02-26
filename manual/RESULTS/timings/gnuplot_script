@@ -1,0 +1,30 @@
+#
+set term pdf enhanced font "Times,12pt" ps .4 
+set grid
+set key outside 
+set xlabel 'Nfem'
+
+set ylabel 'sanity check (s)'
+set output 'sanity.pdf'
+plot[][]\
+'sanity.ascii' u 5:3 w lp,\
+x/25000 lt -1 dt 2 
+
+set ylabel 'build FE system (s)'
+set output 'build.pdf'
+plot[][]\
+'build.ascii' u 6:4 w lp,\
+x/7000 lt -1 dt 2 
+
+set log xy
+set ylabel 'solve (s)'
+set output 'solve.pdf'
+plot[][0.005:]\
+'solving_gmres500.ascii' u 5:3 w lp t 'GMRES, restart=500',\
+'solving_gmres1000.ascii' u 5:3 w lp t 'GMRES, restart=1000',\
+'solving_gmres2000.ascii' u 5:3 w lp t 'GMRES, restart=2000',\
+'solving_lgmres.ascii' u 5:3 w lp t 'LGMRES',\
+'solving_direct.ascii' u 5:3 w lp t 'direct',\
+'solving.ascii' u 5:3 w lp t 'GMRES, restart=2000',\
+x**1.75/25000000 lt -1 dt 2 lw 2 t 'x^{1.75}'  
+
