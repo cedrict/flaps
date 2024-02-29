@@ -4,7 +4,10 @@ The domain is a spherical shell centered around the origin of the Cartesian
 axis system $(x,y,z)$. 
 The inner radius is denoted by $R_1$ and the outer radius by $R_2$.
 The Stokes equations are solved in the domain and the flow is assumed 
-to be instantaneous, incompressible and isothermal.
+to be instantaneous, incompressible and isothermal\footnote{Since 
+the modelling that will be carried out with this code is either 
+instantaneous or spans a few decades only, solving the energy equation 
+makes little sense.}.
 
 The velocity in Cartesian coordinates is denoted by $\vec{v}=(v_x,v_y,v_z)$ and 
 $\vec{v}=(v_r,v_\theta,v_\phi)$ in spherical coordinates. 
@@ -19,7 +22,7 @@ Boundary conditions can be either no slip, free slip or open ('free surface').
 
 The domain is filled with a fluid (the mantle 'm') of viscosity $\eta_m(\vec{r})$ 
 and density $\rho_m(\vec{r})$.
-A sphere ('s') of a different fluid or radius $R_s$ is placed at location $(0,0,z_s)$ with 
+A sphere ('s') of a different fluid of radius $R_s$ is placed at location $(0,0,z_s)$ with 
 viscosity $\eta_s$ and density $\rho_s$. As such the setup is 
 axisymmetric along the North-South poles line.
 The gravity $\vec{g}=-g \vec{e}_r$ points towards the center of the shell\footnote{unless 

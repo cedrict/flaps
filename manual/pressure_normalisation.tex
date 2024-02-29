@@ -2,6 +2,8 @@
 %-------------------------
 \subsubsection*{Plane strain}
 
+In this case the mesh is a full annulus.
+
 In polar coordinates the surface element is 
 \[
 dS = R d\theta
@@ -74,3 +76,4 @@ for iel in range(0,nel):
 poffset/=4*np.pi*R2**2
 \end{lstlisting}
 
+This could be improved and made a bit more accurate.

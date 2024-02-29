@@ -12,7 +12,7 @@
 \item {\python xP,zP}: coordinates of pressure nodes (float64 array size {\python NP}) 
 \item {\python xc,zc}: coordinates of element centers (float64 array size {\python nel}) 
 \item {\python rad,theta}: $r$ and $\theta$ spherical coordinates of velocity nodes  (float64 array size {\python NV}) 
-\item {\python nx,ny}: 
+\item {\python nx,ny}: components of the normal vector (if it exists) at the V nodes
 \item {\python u,v}: velocity field (float64 array size {\python NV})
 \item {\python p}: pressure field (float64 array size {\python NP})
 \item {\python q}: pressure field projected on velocity nodes (float64 array size {\python NV})
@@ -26,8 +26,8 @@
 \item {\python NfemV}: total number of velocity dofs (integer) 
 \item {\python NfemP}: total number of pressure dofs  (integer) 
 \item {\python Nfem}: total number of dofs  (integer) 
-\item {\python iconV}: connectivity array for velocity nodes (integer array) 
-\item {\python iconP}: connectivity array for pressure nodes (integer array)
+\item {\python iconV}: connectivity array for velocity nodes (integer array size (mV,nel) ) 
+\item {\python iconP}: connectivity array for pressure nodes (integer array size (mP,nel) ) 
 \item {\python bc\_fix}: (boolean array size {\python NfemV})
 \item {\python bc\_val}: (float 64 array size {\python NfemV})
 \end{itemize}

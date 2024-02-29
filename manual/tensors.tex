@@ -145,7 +145,8 @@ c_\theta & -s_\theta & 0
 \end{array}
 \right)
 \]
-As we have seen above we have 
+As mentioned before we assume that deformation takes place in the $x,z$-plane, so that 
+derivatives with respect to $y$ and $v_y$ are automatically zero:
 \[
 \dot{\bm\varepsilon}_{\tiny Cart}
 =
@@ -242,15 +243,20 @@ c_\theta  & 0 & -s_\theta \\
 \end{array}
 \right)  \nonumber
 \end{eqnarray}
-We can easily verify that the trace of this tensor is zero.
+We can easily verify that the trace of this tensor is zero (remember that 
+$\dot{\varepsilon}_{xx}+\dot{\varepsilon}_{yy}+\dot{\varepsilon}_{zz}=0$ since 
+the flow is assumed to be incompressible).
 
-In the code we need to be careful and use {\python theta\_sph}:
+In the code we need to be careful and therefore use {\python theta\_sph}:
 
 \begin{center}
 \includegraphics[width=8.3cm]{images/theta}
 \includegraphics[width=8.3cm]{images/theta_sph}
 \end{center}
 
+This is the code used to conver the Cartesian components of the strain rate 
+tensor into their spherical coordinates counterparts ('r' stands for $r$, 
+'t' stands for $\theta$):
 \begin{lstlisting}
 for i in range(0,NV):
     theta_sph[i]=np.pi/2-math.atan(yV[i]/abs(xV[i]))
@@ -265,6 +271,7 @@ for i in range(0,NV):
                exy2[i]*(-np.sin(theta_sph[i])**2+\
                np.cos(theta_sph[i])**2)
 \end{lstlisting}
-
+(note that it is quite unfortunate that my cartesian plane in the code is not x,z
+but x,y... needs to be changed!)
 
 

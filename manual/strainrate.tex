@@ -1,11 +1,30 @@
 There are three different methods implemented in the code.
-after various tests it was found that method 2 was the 
+After various tests it was found that method 2 was the 
 cheapest and most accurate. The other two remain in the code
 but are switched off by default.
 
 \begin{enumerate}
-\item This is only
-\item 
-\item
+\item This is implemented in {\python compute\_strain\_rate1}. The call to this function 
+is triggered by the value of {\python compute\_sr1}. The strain rate components are 
+first computed in the middle of each element {\python exxc,eyyc,exyc} and these quantities 
+are then averaged onto nodes. This yields the nodal quantities {\python exx1,eyy1,exy1}. 
+\item This is implemented in {\python compute\_strain\_rate2}. Inside each element 
+the strain rate components are computed/added at the V nodes. In the end average 
+nodal values are arrived at and yield {\python exx2,eyy2,exy2}.
+  
+\item This is implemented in {\python compute\_strain\_rate3}.
+The call to this function is triggered by the value of {\python compute\_sr3}. 
+This method computes the velocity gradient components at the nodes by solving 
+a linear system\footnote{I need to find the ref for this method in FS}.
+It yields yield {\python exx3,eyy3,exy3}.
+
 \end{enumerate}
+
+After each strain rate tensor is computed its effective value is computed, e.g.:
+\begin{lstlisting}
+sr2=np.zeros(NV,dtype=np.float64)
+sr2[:]=np.sqrt(0.5*(exx2[:]**2+eyy2[:]**2)+exy2[:]**2)
+\end{lstlisting}
+which is the square root of the second invariant.
+
 

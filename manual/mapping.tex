@@ -6,7 +6,7 @@ having to compute elemental integrals such as
 \[
 \K_e = \int_{\Omega_e} {\bm B}^T\cdot {\bm C}_\eta \cdot {\bm B} \; d\Omega
 \]
-where $\Omega_e$ denotes an element.
+where $\Omega_e$ denotes an element (matruces ${\bm B}$ and ${\bm C}$ are defined in FieldStone).
 The way we carry out this integration is by means of the Gauss-Legendre quadrature, which 
 forces us to carry out a change of variables from the original element $\Omega_e$ 
 to the reference element $(r,s) \in [-1,1]\times [-1,1]$. For this we establish a mapping between both 
@@ -27,9 +27,9 @@ For each element we store the coordinates of these mapping points into two
 arrays:
 \begin{lstlisting}
 xmapping=np.zeros((X,nel),dtype=np.float64)
-ymapping=np.zeros((X,nel),dtype=np.float64)
+zmapping=np.zeros((X,nel),dtype=np.float64)
 \end{lstlisting}
-where {\python X} stands for the number of nodes for each mapping.
+where {X} stands for the number of nodes for each mapping.
 
 The reduced coordinates for the quadrature points are given by 
 the Gauss-Legendre quadrature approach. The real coordinates of these points
@@ -41,7 +41,7 @@ for iel in range(0,nel):
         sq=qcoords_s[kq]
         NNNV=NNN(rq,sq,mapping)
         xq=np.dot(NNNV[:],xmapping[:,iel])
-        yq=np.dot(NNNV[:],ymapping[:,iel])
+        zq=np.dot(NNNV[:],zmapping[:,iel])
 \end{lstlisting}
 Likewise the Jacobian matrix is by definition a function of the chosen mapping 
 so that 
@@ -53,9 +53,9 @@ for iel in range(0,nel):
         dNNNVdr=dNNNdr(rq,sq,mapping)
         dNNNVds=dNNNds(rq,sq,mapping)
         jcb[0,0]=np.dot(dNNNVdr[:],xmapping[:,iel])
-        jcb[0,1]=np.dot(dNNNVdr[:],ymapping[:,iel])
+        jcb[0,1]=np.dot(dNNNVdr[:],zmapping[:,iel])
         jcb[1,0]=np.dot(dNNNVds[:],xmapping[:,iel])
-        jcb[1,1]=np.dot(dNNNVds[:],ymapping[:,iel])
+        jcb[1,1]=np.dot(dNNNVds[:],zmapping[:,iel])
         jcob=np.linalg.det(jcb)
         jcbi=np.linalg.inv(jcb)
 \end{lstlisting}

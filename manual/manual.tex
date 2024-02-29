@@ -11,6 +11,15 @@
 \usepackage{tikz}
 \usepackage{siunitx}
 
+\usepackage{hyperref}
+\hypersetup{
+colorlinks,
+citecolor=black,
+filecolor=black,
+linkcolor=violet,
+urlcolor=black}
+
+
 \lstset{ 
   language=Python,
   backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{xcolor}; should come as last argument
@@ -33,6 +42,9 @@
 \newcommand{\python}{\color{teal} \sffamily }
 \newcommand{\K}{{\mathbb{K}}}
 \newcommand{\G}{{\mathbb{G}}}
+
+\usepackage[maxnames=6]{biblatex}
+\addbibresource{bibliography.bib}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -105,6 +117,7 @@ which is stable and commonly used in geodynamics \cite{thba22}.
 
 %----------------------------------------------------------
 \subsection{Quadrature}
+\input{quadrature}
 
 %----------------------------------------------------------
 \subsection{Computing normals}
@@ -238,12 +251,13 @@ What I have tried to cure the pb of the weird anomalies at the poles.
 \item change all eyy and exy to ezz exz
 \item difference between surfaceV and outerQ2 ?!?
 \item remove hrhs and frhs make it rhs
+\item change yV to zV, same with strain rate components
+\item change u,v to vx, vz?
 \end{itemize}
 
 
 
-
-\bibliography{bibliography} 
+\printbibliography
 
 \end{document}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

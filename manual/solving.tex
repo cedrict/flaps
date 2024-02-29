@@ -1,13 +1,13 @@
 
 Once the linear system has been built, we must solve it. 
 The simplest approach is to use 
-spsolve\footnote{\url{https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.spsolve.html#scipy.sparse.linalg.spsolve}}.
+spsolve\footnote{\url{https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.spsolve.html}}.
 
 \begin{lstlisting}       
 sol=sps.linalg.spsolve(sparse_matrix,rhs)
 \end{lstlisting}       
 
-Another possibility is available to us: (L)GMRES\footnote{\url{https://docs.scipy.org/doc/scipy/reference/sparse.linalg.html#module-scipy.sparse.linalg}}.
+Another possibility is available to us: (L)GMRES\footnote{\url{https://docs.scipy.org/doc/scipy/reference/sparse.linalg.html}}.
 
 \begin{lstlisting}       
 sol = scipy.sparse.linalg.gmres(sparse_matrix, rhs, restart=2000,tol=1e-8)[0]
