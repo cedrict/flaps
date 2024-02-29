@@ -3,6 +3,7 @@ set term pdf enhanced font "Times,12pt"
 set grid
 set key outside
 
+set ylabel 'n_x'
 set output 'nx.pdf'
 plot[][]\
 'normal2.ascii_3_2' u 3 w lp lw .5 ps .2 t 'nq=3, map=Q_2',\
@@ -15,6 +16,7 @@ plot[][]\
 'normal2.ascii_5_3' u 3 w lp lw .5 ps .2 t 'nq=5, map=Q_3',\
 'normal2.ascii_5_4' u 3 w lp lw .5 ps .2 t 'nq=5, map=Q_4',\
 
+set ylabel 'n_y'
 set output 'ny.pdf'
 plot[][]\
 'normal2.ascii_3_2' u 4 w lp lw .5 ps .2 t 'nq=3, map=Q_2',\
@@ -28,6 +30,7 @@ plot[][]\
 'normal2.ascii_5_4' u 4 w lp lw .5 ps .2 t 'nq=5, map=Q_4',\
 
 
+set ylabel 'n_x'
 set output 'nnx.pdf'
 plot[][]\
 'normal2a.ascii_3_2' u 3 w lp lw .5 ps .2 t 'nq=3, map=Q_2',\
@@ -41,6 +44,7 @@ plot[][]\
 'normal2a.ascii_5_4' u 3 w lp lw .5 ps .2 t 'nq=5, map=Q_4',\
 'normal2a.ascii_5_4' u (cos($5)) w l lt -1 lw .5 dt 2 t 'cos({/Symbol q})'
 
+set ylabel 'n_y'
 set output 'nny.pdf'
 plot[][]\
 'normal2a.ascii_3_2' u 4 w lp lw .5 ps .2 t 'nq=3, map=Q_2',\
