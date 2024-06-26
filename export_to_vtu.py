@@ -4,8 +4,6 @@ import numpy as np
 from basis_functions import *
 from analytical_solution import *
 from gravity_vector import *
-from density import *
-from viscosity import *
 
 ###############################################################################
 
@@ -14,7 +12,7 @@ def export_solution_to_vtu(istep,NV,nel,xV,zV,iconV,u,v,vr,vt,q,vel_unit,rad,\
                            theta,nx,nz,sr1,sr2,sr3,density_nodal,density_elemental,\
                            viscosity_nodal,viscosity_elemental,R1,R2,rho_m,gravity_model,\
                            g0,rhoc,rhoblob,Rblob,zblob,hull,inner_element,outer_element,\
-                           innerQ2,outerQ2,bc_fix,exp,e_rr2,e_tt2,e_rt2):
+                           innerQ2,outerQ2,bc_fix,e_rr2,e_tt2,e_rt2,planet):
 
    vtufile=open("solution_"+str(istep)+".vtu","w")
    vtufile.write("<VTKFile type='UnstructuredGrid' version='0.1' byte_order='BigEndian'> \n")
@@ -146,30 +144,30 @@ def export_solution_to_vtu(istep,NV,nel,xV,zV,iconV,u,v,vr,vt,q,vel_unit,rad,\
        vtufile.write("%e \n" %e_rt2[i])
    vtufile.write("</DataArray>\n")
    #--
-   if exp==0:
+   if True: 
       vtufile.write("<DataArray type='Float32' NumberOfComponents='3' Name='velocity(th)' Format='ascii'> \n")
       for i in range(0,NV):
-          vtufile.write("%e %e %e \n" %(velocity_x(xV[i],zV[i],R1,R2,exp),0,velocity_y(xV[i],zV[i],R1,R2,exp)))
+          vtufile.write("%e %e %e \n" %(velocity_x(xV[i],zV[i],R1,R2,planet),0,velocity_y(xV[i],zV[i],R1,R2,planet)))
       vtufile.write("</DataArray>\n")
       #--
       vtufile.write("<DataArray type='Float32' Name='pressure (th)' Format='ascii'> \n")
       for i in range (0,NV):
-          vtufile.write("%e \n" % pressure(xV[i],zV[i],R1,R2,rho_m,g0,exp))
+          vtufile.write("%e \n" % pressure(xV[i],zV[i],R1,R2,rho_m,g0,planet))
       vtufile.write("</DataArray>\n")
       #--
       vtufile.write("<DataArray type='Float32' Name='exx (th)' Format='ascii'> \n")
       for i in range(0,NV):
-          vtufile.write("%e \n" %(sr_xx(xV[i],zV[i],R1,R2,exp)))
+          vtufile.write("%e \n" %(sr_xx(xV[i],zV[i],R1,R2,planet)))
       vtufile.write("</DataArray>\n")
       #--
       vtufile.write("<DataArray type='Float32' Name='eyy (th)' Format='ascii'> \n")
       for i in range(0,NV):
-          vtufile.write("%e \n" %(sr_yy(xV[i],zV[i],R1,R2,exp)))
+          vtufile.write("%e \n" %(sr_yy(xV[i],zV[i],R1,R2,planet)))
       vtufile.write("</DataArray>\n")
       #--
       vtufile.write("<DataArray type='Float32' Name='exy (th)' Format='ascii'> \n")
       for i in range(0,NV):
-          vtufile.write("%e \n" %(sr_xy(xV[i],zV[i],R1,R2,exp)))
+          vtufile.write("%e \n" %(sr_xy(xV[i],zV[i],R1,R2,planet)))
       vtufile.write("</DataArray>\n")
    #--
    vtufile.write("</PointData>\n")

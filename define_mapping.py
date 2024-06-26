@@ -49,8 +49,8 @@ def define_mapping(mapping,mmapping,xV,zV,iconV,nel,axisymmetric,rad,theta,nelt)
                for i in range(0,4):
                    ttt=thetamin+i*dtheta
                    rrr=rmin+j*(rmax-rmin)/3
-                   xmapping[counter,iel]=math.sin(ttt)*rrr
-                   zmapping[counter,iel]=math.cos(ttt)*rrr
+                   xmapping[counter,iel]=np.sin(ttt)*rrr
+                   zmapping[counter,iel]=np.cos(ttt)*rrr
                    counter+=1
 
     if mapping=='Q4':
@@ -67,8 +67,8 @@ def define_mapping(mapping,mmapping,xV,zV,iconV,nel,axisymmetric,rad,theta,nelt)
                for i in range(0,5):
                    ttt=thetamin+i*dtheta
                    rrr=rmin+j*(rmax-rmin)/4
-                   xmapping[counter,iel]=math.sin(ttt)*rrr
-                   zmapping[counter,iel]=math.cos(ttt)*rrr
+                   xmapping[counter,iel]=np.sin(ttt)*rrr
+                   zmapping[counter,iel]=np.cos(ttt)*rrr
                    counter+=1
 
     if mapping=='Q5':
@@ -85,8 +85,8 @@ def define_mapping(mapping,mmapping,xV,zV,iconV,nel,axisymmetric,rad,theta,nelt)
                for i in range(0,6):
                    ttt=thetamin+i*dtheta
                    rrr=rmin+j*(rmax-rmin)/5
-                   xmapping[counter,iel]=math.sin(ttt)*rrr
-                   zmapping[counter,iel]=math.cos(ttt)*rrr
+                   xmapping[counter,iel]=np.sin(ttt)*rrr
+                   zmapping[counter,iel]=np.cos(ttt)*rrr
                    counter+=1
 
     if mapping=='Q6':
@@ -103,8 +103,8 @@ def define_mapping(mapping,mmapping,xV,zV,iconV,nel,axisymmetric,rad,theta,nelt)
                for i in range(0,7):
                    ttt=thetamin+i*dtheta
                    rrr=rmin+j*(rmax-rmin)/6
-                   xmapping[counter,iel]=math.sin(ttt)*rrr
-                   zmapping[counter,iel]=math.cos(ttt)*rrr
+                   xmapping[counter,iel]=np.sin(ttt)*rrr
+                   zmapping[counter,iel]=np.cos(ttt)*rrr
                    counter+=1
 
     return xmapping,zmapping

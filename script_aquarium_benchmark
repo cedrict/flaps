@@ -1,0 +1,25 @@
+#! /bin/bash
+#   nelr        = int(sys.argv[1])
+#   visu        = int(sys.argv[2])
+#   nqperdim    = int(sys.argv[3])
+#   mapping     = int(sys.argv[4])
+#   xi          = int(sys.argv[5])
+#   etablobstar = float(sys.argv[6])
+#   rhoblobstar = float(sys.argv[7])
+#   zblob       = float(sys.argv[8])
+#   Rblob       = float(sys.argv[9])
+#   etalithstar = float(sys.argv[10])
+
+echo '#did you choose the right planet in flaps.py?'
+
+nqperdim=3
+xi=6
+
+for mapping in 2 3 4; do
+    for l in 16 24 32 48 64 80 96; do
+        echo nelr= $l - nqperdim= $nqperdim - mapping= $mapping - xi= $xi
+        python3 flaps.py $l 1 $nqperdim $mapping $xi 1 1 1 1 1 > opla_${l}_${xi}
+        grep errv opla_${l}_${xi} >> errors_mappingQ${mapping}
+    done
+done
+

@@ -1,16 +1,18 @@
 ###############################################################################
 import numpy as np
-from density import *
-from viscosity import *
+from density_Earth import *
+from density_AnnulusBenchmark import *
+from viscosity_Earth import *
+from viscosity_Mars import *
 
 ###############################################################################
-# this function computes the density and viscosity in the middle of the element
-# and project these values onto the velocity nodes (for visualisation 
+# this function computes the density and viscosity in the middle of the elt.
+# It also projects these values onto the velocity nodes (for visualisation 
 # purposes only!)
 ###############################################################################
 
 def compute_rho_eta_fields(mV,NV,nel,xc,zc,iconV,R1,R2,rho_m,eta_m,eta_model,\
-                           rho_model,exp,rhoblobstar,zblob,Rblob):
+                           rho_model,rhoblobstar,zblob,Rblob,planet):
 
     counter=np.zeros(NV,dtype=np.float64)
     viscosity_elemental=np.zeros(nel,dtype=np.float64)
@@ -19,9 +21,26 @@ def compute_rho_eta_fields(mV,NV,nel,xc,zc,iconV,R1,R2,rho_m,eta_m,eta_model,\
     density_nodal=np.zeros(NV,dtype=np.float64)
 
     for iel in range(0,nel):
-        viscosity_elemental[iel]=viscosity(xc[iel],zc[iel],R1,R2,eta_m,eta_model)
-        density_elemental[iel]=density(xc[iel],zc[iel],R1,R2,rho_m,rho_model,\
-                                       exp,rhoblobstar,zblob,Rblob)
+        match planet:
+           case "Earth":
+              viscosity_elemental[iel]=viscosity_Earth(xc[iel],zc[iel],R1,R2,eta_m,eta_model)
+              density_elemental[iel]=density_Earth(xc[iel],zc[iel],R1,R2,rho_m,rho_model,\
+                                                   rhoblobstar,zblob,Rblob)
+           case "Mars":
+              viscosity_elemental[iel]=viscosity_Mars(xc[iel],zc[iel],R1,R2,eta_m,eta_model)
+              density_elemental[iel]=density_Mars(xc[iel],zc[iel],R1,R2,rho_m,rho_model,\
+                                                  rhoblobstar,zblob,Rblob)
+           case "AnnulusBenchmark":
+              viscosity_elemental[iel]=1
+              density_elemental[iel]=density_AnnulusBenchmark(xc[iel],zc[iel],R1,R2)
+
+           case "AquariumBenchmark":
+              viscosity_elemental[iel]=1e22
+              density_elemental[iel]=4000
+             
+           case _:
+              exit('pb in compute_rho_eta_fields: unknown planet')
+
         for i in range(0,mV):
             counter[iconV[i,iel]]+=1
             viscosity_nodal[iconV[i,iel]]+=viscosity_elemental[iel]

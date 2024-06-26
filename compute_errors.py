@@ -6,7 +6,7 @@ from analytical_solution import *
 ###############################################################################
 
 def compute_errors(nel,nqel,mapping,xmapping,zmapping,qcoords_r,qcoords_s,qweights,\
-                   R1,R2,rho_m,g0,exp,u,v,p,axisymmetric,iconV,iconP,total_volume):
+                   R1,R2,rho_m,g0,u,v,p,axisymmetric,iconV,iconP,total_volume,planet):
 
     jcb=np.zeros((2,2),dtype=np.float64)
 
@@ -43,13 +43,14 @@ def compute_errors(nel,nqel,mapping,xmapping,zmapping,qcoords_r,qcoords_s,qweigh
             uq=np.dot(NNNV[:],u[iconV[:,iel]])
             vq=np.dot(NNNV[:],v[iconV[:,iel]])
 
-            errv+=((uq-velocity_x(xq,zq,R1,R2,exp))**2+\
-                   (vq-velocity_y(xq,zq,R1,R2,exp))**2)*JxW
+            errv+=((uq-velocity_x(xq,zq,R1,R2,planet))**2+\
+                   (vq-velocity_y(xq,zq,R1,R2,planet))**2)*JxW
 
             vrms+=(uq**2+vq**2)*JxW
 
             pq=np.dot(NNNP[:],p[iconP[:,iel]])
-            errp+=(pq-pressure(xq,zq,R1,R2,rho_m,g0,exp))**2*JxW
+
+            errp+=(pq-pressure(xq,zq,R1,R2,rho_m,g0,planet))**2*JxW
 
         # end for kq
     # end for iel
