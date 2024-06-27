@@ -144,7 +144,7 @@ def export_solution_to_vtu(istep,NV,nel,xV,zV,iconV,u,v,vr,vt,q,vel_unit,rad,\
        vtufile.write("%e \n" %e_rt2[i])
    vtufile.write("</DataArray>\n")
    #--
-   if True: 
+   if planet=='AnnulusBenchmark' or planet=='AquariumBenchmark': 
       vtufile.write("<DataArray type='Float32' NumberOfComponents='3' Name='velocity(th)' Format='ascii'> \n")
       for i in range(0,NV):
           vtufile.write("%e %e %e \n" %(velocity_x(xV[i],zV[i],R1,R2,planet),0,velocity_y(xV[i],zV[i],R1,R2,planet)))

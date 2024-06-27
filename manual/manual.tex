@@ -146,19 +146,37 @@ which is stable and commonly used in geodynamics \cite{thba22}.
 
 
 
-
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
-\section{The data}
+\section{The 'planets'}
 
-%----------------------------------------------------------
-\subsection{Earth}
+There is one important parameter which controls the type of experiment that is carried
+out: {\python planet}.
+It can take one of the following values:
+
+\begin{itemize}
+\item {\python Earth}: in this case $R_1=3480km$, $R_2=6371km$, $g_0=9.81$.
 \input{data_earth}
 
-%----------------------------------------------------------
-\subsection{Mars}
+\item {\python Mars}: in this case $R_1=1700km$, $R_2=3390km$, $g_0=3.71$.
+\input{data_mars}
+
+\item {\python 4DEarthBenchmark}: in this case $R_1=3400km$, $R_2=6400km$, $g_0=10$.
+The buoyant object is a sphere of radius $R_s$, placed at $z=z_s$ above the 
+center of the planet. 
+
+ 
+\item {\python AnnulusBenchmark}: See \textcite{gadb24}.
+Density is implemented in {\tt density\_AnnulusBenchmark.py} 
+while viscosity is 1.
+No buoyant object is present.
+This is a manufactured solution, see for example stones 9, 21, 74, 133.
+
+\item {\python AquariumBenchmark}: Density is constant at 4000kg/m3 and 
+viscosity is constant at 10**22 Pa.s
+No buoyant object is present.
+\end{itemize}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
@@ -240,18 +258,14 @@ What I have tried to cure the pb of the weird anomalies at the poles.
 \item gravity calculations. import from f96, re-benchmark
 \item CBF? 
 \item compute self gravity for reduced density case 
-\item export exx1 and exx3 to outside function, clean their code too? 
-\item remove call to math 
 \item bottom free slip 
-\item change y for z in stone
 \item use PREM gravity value
 \item aspect with GMG ?
 \item compute moment of inertia
-\item by default code now uses elemental rho and eta. it changes things wrt exp0 benchmark results!
-\item change all eyy and exy to ezz exz
+\item by default code now uses elemental rho and eta. 
+it changes things wrt exp0 benchmark results!
 \item difference between surfaceV and outerQ2 ?!?
 \item remove hrhs and frhs make it rhs
-\item change yV to zV, same with strain rate components
 \item change u,v to vx, vz?
 \end{itemize}
 

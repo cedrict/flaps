@@ -1,37 +1,53 @@
 
-We assume that viscosity is purely a function of depth\footnote{This is borrowed
-from stone 71}.. 
-
-Five radial viscosity profiles are available:
+Five radial viscosity profiles are available (see {\tt viscosity\_Earth.py}):
 \begin{itemize}
-\item The first viscosity profile is a constant viscosity for all depths of $10^{22}$ Pa s.
-This value is an estimated value of what is normally found in the literature. 
+\item
+{\python eta\_model=0}:
+ The first viscosity profile is a constant viscosity for all depths of $\eta_m$. 
 
-\item The second viscosity profile comes from Yoshida et al (2001) \cite{yohk01}. It uses three different regions: lithosphere (0 km to 150 km), upper mantle (150 km to 670 km) and lower mantle (670 km to 2900 km).
-
-\item The third viscosity profile comes from Steinberger \& Holmes (2008) \cite{stho08}
-which is comparable to \cite{stca06}, but of the latter no available data was available.
-Data is read from the file \texttt{DATA/EARTH/eta\_stho08.ascii}.
-
-\item The fourth and fifth profile come from Ciskova et al (2012) \cite{civs12}.
+\item
+{\python eta\_model=1,2}:
+ The fourth and fifth profile come from Ciskova et al (2012) \cite{civs12}.
 Data is read from the file \texttt{DATA/EARTH/eta\_civs.ascii}.
 The paper showcases two main families of radial viscosity profiles in literature. Family A, which has a sharp
 increase below the 660 km transition zone and remains constant for most of the lower mantle
 and family B which is much smoother over the transition zone and increases with depth in the lower mantle.
 
+\item 
+{\python eta\_model=3}:
+The third viscosity profile comes from Steinberger \& Holmes (2008) \cite{stho08}
+which is comparable to \cite{stca06}, but of the latter no available data was available.
+Data is read from the file \texttt{DATA/EARTH/eta\_stho08.ascii}.
+
+\item
+{\python eta\_model=4}:
+ The second viscosity profile comes from Yoshida et al (2001) \cite{yohk01}. It uses three different regions: lithosphere (0 km to 150 km), upper mantle (150 km to 670 km) and lower mantle (670 km to 2900 km).
+
 \end{itemize}
 
-Three radial density profiles are available:
+Three radial density profiles are available (see {\tt density\_Earth.py}):
 
 \begin{itemize}
-\item PREM \cite{dzan81}
-\item ak135f \cite{keeb95} \url{http://rses.anu.edu.au/seismology/ak135/ak135f.html}
-Data is read from the file \texttt{DATA/EARTH/rho\_ak135f.ascii}.
-\item stw105 \cite{kued08} \url{http://ds.iris.edu/ds/products/emc-stw105/}
+\item
+{\python rho\_model=0}: density is constant and set to $\rho_m$.
+
+{\python rho\_model=1}:
+ PREM \cite{dzan81}
+
+\item
+{\python rho\_model=2}
+ stw105 \cite{kued08} \url{http://ds.iris.edu/ds/products/emc-stw105/}
 Data is read from the file \texttt{DATA/EARTH/rho\_stw105.ascii}.
+
+\item
+{\python rho\_model=3}
+ ak135f \cite{keeb95} \url{http://rses.anu.edu.au/seismology/ak135/ak135f.html}
+Data is read from the file \texttt{DATA/EARTH/rho\_ak135f.ascii}.
+
+
 \end{itemize}
 
-{\python eta\_model}
 
-{\python rho\_model}
+The buoyant object is a sphere of radius $R_s$, placed at $z=z_s$ above the 
+center of the planet. It is parameterised by $\rho_{blob}^\star =\rho_{blob}/$ 
 

@@ -22,6 +22,7 @@ from numba import jit
 
 from basis_functions import *
 from density_Earth import *
+from density_4DEarthBenchmark import *
 from density_AnnulusBenchmark import *
 from viscosity_Earth import *
 from analytical_solution import *
@@ -44,9 +45,9 @@ from constants import *
 
 #planet='Earth'
 #planet='Mars'
-#planet='4DEarthBenchmark'
+planet='4DEarthBenchmark'
 #planet='AnnulusBenchmark'
-planet='AquariumBenchmark'
+#planet='AquariumBenchmark'
 
 ###############################################################################
 # list of available Earth density and viscosity profiles
@@ -102,30 +103,31 @@ if int(len(sys.argv) == 11):
    nqperdim    = int(sys.argv[3])
    mapping     = int(sys.argv[4])
    xi          = int(sys.argv[5])
-   etablobstar = float(sys.argv[6])
-   rhoblobstar = float(sys.argv[7])
+   etablob     = float(sys.argv[6])
+   rhoblob     = float(sys.argv[7])
    zblob       = float(sys.argv[8])
    Rblob       = float(sys.argv[9])
-   etalithstar = float(sys.argv[10])
+   etalith     = float(sys.argv[10])
    if mapping==1: mapping='Q1'
    if mapping==2: mapping='Q2'
    if mapping==3: mapping='Q3'
    if mapping==4: mapping='Q4'
    if mapping==5: mapping='Q5'
    if mapping==6: mapping='Q6'
+   etablob=10**etablob
    print(sys.argv)
 
 else:
-   nelr        = 32 # Q1 cells!
+   nelr        = 64 # Q1 cells!
    visu        = 1
    nqperdim    = 3
    mapping     = 'Q2' 
    xi          = 6
-   etablobstar = 1
-   rhoblobstar = 0.9
+   etablob     = 1e23
+   rhoblob     = 3900
    zblob       = 4900e3
    Rblob       = 400e3
-   etalithstar = 1
+   etalith     = 1e22
 
 DJ=False
 
@@ -213,9 +215,28 @@ match planet:
       eta_m=1e21
       rho_m=4000.
       rhoc=6000
+
+   case "4DEarthBenchmark":
+      nstep=1
+      dt=50*year
+      solve_stokes=True
+      axisymmetric=True
+      use_elemental_density=True
+      use_elemental_viscosity=True
+      eta_ref=1e21
+      vel_unit=0.01/year
+      velunit='cm/year'
+      surface_free_slip=True
+      bottom_free_slip=False 
+      compute_gravity=False
+      self_gravitation=False
+      gravity_model=0
+      eta_m=1e21
+      rho_m=4000.
+      rhoc=6000
    
    case _:
-      exit('pb in flaps rhoq: unknown planet')
+      exit('pb in flaps setup: unknown planet')
 
 
 ###########################################################
@@ -585,8 +606,6 @@ if axisymmetric:
 else:
    total_volume=np.pi*(R2**2-R1**2)
 
-rhoblob=rhoblobstar*rho_m
-
 print('  -------------------')
 print('  nelr=',nelr,' ; nelt=',nelt,' ; nel=',nel)
 print('  NfemV=',NfemV,' ; NfemP=',NfemP, '; Nfem=',Nfem)
@@ -599,6 +618,7 @@ print('  eta_model=',eta_model)
 print('  rho_model=',rho_model)
 print('  compute_gravity=',compute_gravity)
 print('  rhoblob=',rhoblob)
+print('  etablob=',etablob)
 print('  Rblob=',Rblob)
 print('  zblob=',zblob)
 print('  nel_phi=',nel_phi)
@@ -792,6 +812,8 @@ bc_val = np.zeros(Nfem,dtype=np.float64)
 match planet:
    #case 'Earth':
    #case 'Mars':
+
+   #------------------------
    case 'AquariumBenchmark':
       for i in range(0,NV):
           #vertical wall x=0
@@ -799,7 +821,31 @@ match planet:
              bc_fix[i*ndofV]   = True ; bc_val[i*ndofV]   = 0 #u=0
              if rad[i]/R2>1-eps:
                 bc_fix[i*ndofV+1] = True ; bc_val[i*ndofV+1] = 0 #also v=0 for 2 pts
-   #case '4DEarthBenchmark':
+          #surface
+          if not surface_free_slip and rad[i]/R2>(1-eps):
+             bc_fix[i*ndofV]   = True ; bc_val[i*ndofV]   = 0 
+             bc_fix[i*ndofV+1] = True ; bc_val[i*ndofV+1] = 0
+          if rad[i]/R1<1+eps:
+             bc_fix[i*ndofV]   = True ; bc_val[i*ndofV]   = 0 
+             bc_fix[i*ndofV+1] = True ; bc_val[i*ndofV+1] = 0
+
+   #------------------------
+   case '4DEarthBenchmark':
+      for i in range(0,NV):
+          #vertical wall x=0
+          if axisymmetric and xV[i]/R1<eps:
+             bc_fix[i*ndofV]   = True ; bc_val[i*ndofV]   = 0 #u=0
+             if rad[i]/R2>1-eps:
+                bc_fix[i*ndofV+1] = True ; bc_val[i*ndofV+1] = 0 #also v=0 for 2 pts
+          #surface
+          if not surface_free_slip and rad[i]/R2>(1-eps):
+             bc_fix[i*ndofV]   = True ; bc_val[i*ndofV]   = 0 
+             bc_fix[i*ndofV+1] = True ; bc_val[i*ndofV+1] = 0
+          if rad[i]/R1<1+eps:
+             bc_fix[i*ndofV]   = True ; bc_val[i*ndofV]   = 0 
+             bc_fix[i*ndofV+1] = True ; bc_val[i*ndofV+1] = 0
+
+   #------------------------
    case 'AnnulusBenchmark':
       for i in range(0,NV):
          if rad[i]/R1<1+eps:
@@ -914,7 +960,7 @@ for istep in range(0,nstep):
 
        density_elemental,density_nodal,viscosity_elemental,viscosity_nodal=\
        compute_rho_eta_fields(mV,NV,nel,xc,zc,iconV,R1,R2,rho_m,eta_m,eta_model,\
-                              rho_model,rhoblobstar,zblob,Rblob,planet)
+                              rho_model,rhoblob,etablob,zblob,Rblob,planet)
 
        print(spacing+" -> eta_e (m,M) %.2e %.2e " %(np.min(viscosity_elemental),np.max(viscosity_elemental)))
        print(spacing+" -> rho_e (m,M) %.2e %.2e " %(np.min(density_elemental),np.max(density_elemental)))
@@ -985,10 +1031,13 @@ for istep in range(0,nstep):
                match planet:
                   case "Earth":
                      rhoq[counterq]=density_Earth(xq,yq,R1,R2,rho_m,rho_model,\
-                                                  rhoblobstar,zblob,Rblob)
+                                                  rhoblob,zblob,Rblob)
                   case "Mars":
                      rhoq[counterq]=density_Mars(xq,yq,R1,R2,rho_m,rho_model,\
-                                                 rhoblobstar,zblob,Rblob)
+                                                 rhoblob,zblob,Rblob)
+                  case "4DEarthBenchmark":
+                     rhoq[counterq]=density_4DEarthBenchmark(xq,yq,R1,R2,rho_m,rho_model,\
+                                                             rhoblob,zblob,Rblob)
                   case "AnnulusBenchmark":
                      rhoq[counterq]=density_AnnulusBenchmark(xq,yq,R1,R2)
                   case _:
@@ -1004,6 +1053,8 @@ for istep in range(0,nstep):
                      etaq[counterq]=viscosity_Earth(xq,yq,R1,R2,eta_m,eta_model)
                   case "Mars":
                      etaq[counterq]=viscosity_Mars(xq,yq,R1,R2,eta_m,eta_model)
+                  case "4DEarthBenchmark":
+                     etaq[counterq]=viscosity_4DEarth(xq,yq,R1,R2,eta_m,eta_model)
                   case "AnnulusBenchmark":
                      etaq[counterq]=1
                   case _:
@@ -1536,9 +1587,9 @@ for istep in range(0,nstep):
     ###############################################################################
 
     if planet=='4DEarthBenchmark':
-       print(spacing+" -> EARTH4D | nelr= %d v_r %.5f %.5f " %\
+       print(spacing+" -> 4DEARTH | nelr= %d v_r %.5f %.5f " %\
        (nelr,np.min(vr)/vel_unit,np.max(vr)/vel_unit))
-       print(spacing+" -> EARTH4D | nelr= %d v_t %.5f %.5f " %\
+       print(spacing+" -> 4DEARTH | nelr= %d v_t %.5f %.5f " %\
        (nelr,np.min(vt)/vel_unit,np.max(vt)/vel_unit))
 
     ###############################################################################

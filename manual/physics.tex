@@ -14,19 +14,21 @@ $\vec{v}=(v_r,v_\theta,v_\phi)$ in spherical coordinates.
 The equations to solve are then
 
 \begin{eqnarray}
-- \vec\nabla p + \vec\nabla \cdot (2 \eta \dot{\bm \varepsilon}(\vec v))  + \rho \vec{g} &=& 0 \\
+- \vec\nabla p + \vec\nabla \cdot (2 \eta {\bm \varepsilon}(\vec v))  + \rho \vec{g} &=& 0 \\
 \vec\nabla \cdot \vec{v} &=& 0
 \end{eqnarray}
 The domain has two boundaries: the inner boundary $r=R_1$ and the outer boundary at $r=R_2$.
 Boundary conditions can be either no slip, free slip or open ('free surface').
 
-The domain is filled with a fluid (the mantle 'm') of viscosity $\eta_m(\vec{r})$ 
-and density $\rho_m(\vec{r})$.
-A sphere ('s') of a different fluid of radius $R_s$ is placed at location $(0,0,z_s)$ with 
-viscosity $\eta_s$ and density $\rho_s$. As such the setup is 
-axisymmetric along the North-South poles line.
-The gravity $\vec{g}=-g \vec{e}_r$ points towards the center of the shell\footnote{unless 
-self gravitation is used}.
+
+%The domain is filled with a fluid (the mantle 'm') of viscosity $\eta_m(\vec{r})$ 
+%and density $\rho_m(\vec{r})$.
+%A sphere ('s') of a different fluid of radius $R_s$ is placed at location $(0,0,z_s)$ with 
+%viscosity $\eta_s$ and density $\rho_s$. As such the setup is 
+%axisymmetric along the North-South poles line.
+
+The gravity $\vec{g}=-g \vec{e}_r$ points towards the center of the 
+shell\footnote{unless self gravitation is used}.
 
 \begin{center}
 \includegraphics[width=6.5cm]{images/sphcoord}

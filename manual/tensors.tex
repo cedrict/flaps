@@ -259,19 +259,16 @@ tensor into their spherical coordinates counterparts ('r' stands for $r$,
 't' stands for $\theta$):
 \begin{lstlisting}
 for i in range(0,NV):
-    theta_sph[i]=np.pi/2-math.atan(yV[i]/abs(xV[i]))
     if xV[i]>=0:
-       e_rr[i]=exx2[i]*np.sin(theta_sph[i])**2+\
-               2*exy2[i]*np.sin(theta_sph[i])*np.cos(theta_sph[i])+\
-               eyy2[i]*np.cos(theta_sph[i])**2
-       e_tt[i]=exx2[i]*np.cos(theta_sph[i])**2-\
-               2*exy2[i]*np.sin(theta_sph[i])*np.cos(theta_sph[i])+\
-               eyy2[i]*np.sin(theta_sph[i])**2
-       e_rt[i]=(exx2[i]-eyy2[i])*np.sin(theta_sph[i])*np.cos(theta_sph[i])+\
-               exy2[i]*(-np.sin(theta_sph[i])**2+\
-               np.cos(theta_sph[i])**2)
+       e_rr2[i]=exx2[i]*np.sin(theta[i])**2+\
+               2*exz2[i]*np.sin(theta[i])*np.cos(theta[i])+\
+               ezz2[i]*np.cos(theta[i])**2
+       e_tt2[i]=exx2[i]*np.cos(theta[i])**2-\
+               2*exz2[i]*np.sin(theta[i])*np.cos(theta[i])+\
+               ezz2[i]*np.sin(theta[i])**2
+       e_rt2[i]=(exx2[i]-ezz2[i])*np.sin(theta[i])*np.cos(theta[i])+\
+               exz2[i]*(-np.sin(theta[i])**2+\
+               np.cos(theta[i])**2)
 \end{lstlisting}
-(note that it is quite unfortunate that my cartesian plane in the code is not x,z
-but x,y... needs to be changed!)
 
 

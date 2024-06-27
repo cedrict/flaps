@@ -19,13 +19,13 @@ rm errors_map*
 rm timings_*
 
 for mapping in 2 3 4; do
-    for l in 16 24 32 48 64 80 96; do
+    for l in 16 24 32 40 48 56 64 72 80 96 128; do
         echo nelr= $l - nqperdim= $nqperdim - mapping= $mapping - xi= $xi
         python3 flaps.py $l 1 $nqperdim $mapping $xi 1 1 1 1 1 > opla_${l}_${xi}
         grep errv opla_${l}_${xi} >> errors_mappingQ${mapping}
-        grep sanity opla_${l}_${xi} >> timings_sanity 
-        grep build opla_${l}_${xi} | grep FE >> timings_build
-        grep solving opla_${l}_${xi} >> timings_solving
+        grep sanity opla_${l}_${xi} >> timings_sanity_mappingQ${mapping}
+        grep build opla_${l}_${xi} | grep FE >> timings_build_mappingQ${mapping}
+        grep solving opla_${l}_${xi} >> timings_solving_mappingQ${mapping}
     done
 done
 
