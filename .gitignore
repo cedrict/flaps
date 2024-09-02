@@ -3,6 +3,12 @@ manual/manual.pdf
 *.toc
 *.aux
 
+*.bbl
+*.bcf
+*.blg
+*.out
+*.xml
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

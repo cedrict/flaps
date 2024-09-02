@@ -48,6 +48,7 @@ from constants import *
 planet='4DEarthBenchmark'
 #planet='AnnulusBenchmark'
 #planet='AquariumBenchmark'
+planet='BartDisc'
 
 ###############################################################################
 # list of available Earth density and viscosity profiles
@@ -118,7 +119,7 @@ if int(len(sys.argv) == 11):
    print(sys.argv)
 
 else:
-   nelr        = 64 # Q1 cells!
+   nelr        = 80 # Q1 cells!
    visu        = 1
    nqperdim    = 3
    mapping     = 'Q2' 
@@ -160,7 +161,7 @@ match planet:
       gravity_model=0
       eta_m=1e21
       rho_m=4000.
-      rhoc=6000
+      rho_core=6000
    
    case "Mars":
       nstep=1
@@ -195,7 +196,7 @@ match planet:
       gravity_model=0
       rho_m=1.
       eta_m=1
-      rhoc=0
+      rho_core=0
         
    case "AquariumBenchmark":
       nstep=1
@@ -214,7 +215,7 @@ match planet:
       gravity_model=0
       eta_m=1e21
       rho_m=4000.
-      rhoc=6000
+      rho_core=6000
 
    case "4DEarthBenchmark":
       nstep=1
@@ -233,7 +234,41 @@ match planet:
       gravity_model=0
       eta_m=1e21
       rho_m=4000.
-      rhoc=6000
+      rho_core=6000
+
+   case "BartDisc":
+      nstep=1
+      dt=0
+      solve_stokes=True
+      axisymmetric=True
+      use_elemental_density=True
+      use_elemental_viscosity=True
+      eta_ref=1e21
+      vel_unit=0.01/year
+      velunit='cm/year'
+      surface_free_slip=True
+      bottom_free_slip=False 
+      compute_gravity=False
+      self_gravitation=False
+      gravity_model=0
+      eta_m=1e22
+      rho_m=4000.
+      R1disc=2900e3
+      R2disc=3000e3
+      thetadisc=np.pi/8
+      rhodisc=3500.
+      etadisc=3e21 
+      rho_core=6000
+      rho_crust=3300       ; eta_crust=1e23 
+      rho_lithosphere=3400 ; eta_lithosphere=1e21
+      rho_uppermantle=3500 ; eta_uppermantle=1e22
+      rho_lowermantle=3600 ; eta_lowermantle=5e22
+      R_c_l=3000e3
+      R_l_um=2700e3
+      R_um_lm=2500e3
+
+      #R1=1700e3
+      #R2=3390e3
    
    case _:
       exit('pb in flaps setup: unknown planet')
@@ -408,16 +443,21 @@ match planet:
    ############################################################################
    case '4DEarthBenchmark':
    ############################################################################
-      start = timing.time()
-
       R1=3400e3
       R2=6400e3
       g0=10  
 
    ############################################################################
+   case 'BartDisc':
+   ############################################################################
+      R1=1700e3
+      R2=3390e3
+      g0=3.71 #https://en.wikipedia.org/wiki/Mars   
+
+
+   ############################################################################
    case 'AnnulusBenchmark':
    ############################################################################
-      start = timing.time()
       R1=1
       R2=2
       g0=1
@@ -425,7 +465,6 @@ match planet:
    ############################################################################
    case 'AquariumBenchmark':
    ############################################################################
-      start = timing.time()
       R1=3400
       R2=6400
       g0=10
@@ -846,6 +885,22 @@ match planet:
              bc_fix[i*ndofV+1] = True ; bc_val[i*ndofV+1] = 0
 
    #------------------------
+   case 'BartDisc':
+      for i in range(0,NV):
+          #vertical wall x=0
+          if axisymmetric and xV[i]/R1<eps:
+             bc_fix[i*ndofV]   = True ; bc_val[i*ndofV]   = 0 #u=0
+             if rad[i]/R2>1-eps:
+                bc_fix[i*ndofV+1] = True ; bc_val[i*ndofV+1] = 0 #also v=0 for 2 pts
+          #surface
+          if not surface_free_slip and rad[i]/R2>(1-eps):
+             bc_fix[i*ndofV]   = True ; bc_val[i*ndofV]   = 0 
+             bc_fix[i*ndofV+1] = True ; bc_val[i*ndofV+1] = 0
+          if rad[i]/R1<1+eps:
+             bc_fix[i*ndofV]   = True ; bc_val[i*ndofV]   = 0 
+             bc_fix[i*ndofV+1] = True ; bc_val[i*ndofV+1] = 0
+
+   #------------------------
    case 'AnnulusBenchmark':
       for i in range(0,NV):
          if rad[i]/R1<1+eps:
@@ -960,7 +1015,11 @@ for istep in range(0,nstep):
 
        density_elemental,density_nodal,viscosity_elemental,viscosity_nodal=\
        compute_rho_eta_fields(mV,NV,nel,xc,zc,iconV,R1,R2,rho_m,eta_m,eta_model,\
-                              rho_model,rhoblob,etablob,zblob,Rblob,planet)
+                              rho_model,rhoblob,etablob,zblob,Rblob,\
+                              rhodisc,etadisc,R1disc,R2disc,thetadisc,
+                              eta_crust,eta_lithosphere,eta_uppermantle,eta_lowermantle,\
+                              rho_crust,rho_lithosphere,rho_uppermantle,rho_lowermantle,\
+                              R_c_l,R_l_um,R_um_lm,planet)
 
        print(spacing+" -> eta_e (m,M) %.2e %.2e " %(np.min(viscosity_elemental),np.max(viscosity_elemental)))
        print(spacing+" -> rho_e (m,M) %.2e %.2e " %(np.min(density_elemental),np.max(density_elemental)))
@@ -1177,7 +1236,7 @@ for istep in range(0,nstep):
             G_el-=b_mat.T.dot(N_mat)*coeffq
 
             g_x,g_y=gravity_acceleration(xq,yq,R1,R2,gravity_model,g0,rho_m,\
-                                         rhoc,rhoblob,Rblob,zblob)
+                                         rho_core,rhoblob,Rblob,zblob)
             for i in range(0,mV):
                 f_el[ndofV*i  ]+=NNNV[i]*coeffq*g_x*rhoq[counterq]
                 f_el[ndofV*i+1]+=NNNV[i]*coeffq*g_y*rhoq[counterq]
@@ -1578,7 +1637,7 @@ for istep in range(0,nstep):
        export_solution_to_vtu(istep,NV,nel,xV,zV,iconV,u,v,vr,vt,q,vel_unit,rad,\
                               theta,nx,nz,sr1,sr2,sr3,density_nodal,density_elemental,\
                               viscosity_nodal,viscosity_elemental,R1,R2,rho_m,\
-                              gravity_model,g0,rhoc,rhoblob,Rblob,zblob,hull,\
+                              gravity_model,g0,rho_core,rhoblob,Rblob,zblob,hull,\
                               inner_element,outer_element,innerQ2,outerQ2,bc_fix,\
                               e_rr2,e_tt2,e_rt2,planet)
 
