@@ -14,7 +14,7 @@ import numpy as np
 #-------------------R1
 
 #@jit(nopython=True)
-def density_BartDisc(x,z,R1,R2,rhodisc,R1disc,R2disc,thetadisc,\
+def density_MarsDisc(x,z,R1,R2,rhodisc,R1disc,R2disc,thetadisc,\
                      rho_c,rho_l,rho_um,rho_lm,R_c_l,R_l_um,R_um_lm):
 
     r=np.sqrt(x**2+z**2)
@@ -31,6 +31,8 @@ def density_BartDisc(x,z,R1,R2,rhodisc,R1disc,R2disc,thetadisc,\
 
     if r>R1disc and r<R2disc and theta<thetadisc:
        val=rhodisc
+
+    #val=3550
   
     return val       
 

@@ -45,10 +45,10 @@ from constants import *
 
 #planet='Earth'
 #planet='Mars'
-planet='4DEarthBenchmark'
+#planet='4DEarthBenchmark'
 #planet='AnnulusBenchmark'
 #planet='AquariumBenchmark'
-planet='BartDisc'
+planet='MarsDisc'
 
 ###############################################################################
 # list of available Earth density and viscosity profiles
@@ -119,7 +119,7 @@ if int(len(sys.argv) == 11):
    print(sys.argv)
 
 else:
-   nelr        = 80 # Q1 cells!
+   nelr        = 100 # Q1 cells!
    visu        = 1
    nqperdim    = 3
    mapping     = 'Q2' 
@@ -236,10 +236,11 @@ match planet:
       rho_m=4000.
       rho_core=6000
 
-   case "BartDisc":
+   case "MarsDisc":
+
       nstep=1
-      dt=0
-      solve_stokes=True
+      dt=50*year
+      solve_stokes=False
       axisymmetric=True
       use_elemental_density=True
       use_elemental_viscosity=True
@@ -248,28 +249,25 @@ match planet:
       velunit='cm/year'
       surface_free_slip=True
       bottom_free_slip=False 
-      compute_gravity=False
+      compute_gravity=True
       self_gravitation=False
       gravity_model=0
       eta_m=1e22
-      rho_m=4000.
-      R1disc=2900e3
-      R2disc=3000e3
-      thetadisc=np.pi/8
-      rhodisc=3500.
-      etadisc=3e21 
-      rho_core=6000
-      rho_crust=3300       ; eta_crust=1e23 
-      rho_lithosphere=3400 ; eta_lithosphere=1e21
-      rho_uppermantle=3500 ; eta_uppermantle=1e22
-      rho_lowermantle=3600 ; eta_lowermantle=5e22
-      R_c_l=3000e3
-      R_l_um=2700e3
-      R_um_lm=2500e3
+      rho_m=3550.
+      R1disc=2296e3-100e3
+      R2disc=R1disc+235e3
+      thetadisc=1700/(3396-1100+100)#np.pi/8
+      rhodisc=rho_m-70
+      etadisc=1e21
+      rho_core=8050
+      rho_crust=3050       ; eta_crust=1e23
+      rho_lithosphere=3550. ; eta_lithosphere=1e23
+      rho_uppermantle=3550. ; eta_uppermantle=6e20
+      rho_lowermantle=3550. ; eta_lowermantle=1e21
+      R_c_l=3396e3-60e3
+      R_l_um=3396e3-83e3
+      R_um_lm=2896e3
 
-      #R1=1700e3
-      #R2=3390e3
-   
    case _:
       exit('pb in flaps setup: unknown planet')
 
@@ -278,7 +276,7 @@ match planet:
 # gravity parameters
 
 self_gravitation=False
-nel_phi     = 100
+nel_phi     = 2000
 
 ###########################################################
 
@@ -448,11 +446,11 @@ match planet:
       g0=10  
 
    ############################################################################
-   case 'BartDisc':
+   case 'MarsDisc':
    ############################################################################
-      R1=1700e3
-      R2=3390e3
-      g0=3.71 #https://en.wikipedia.org/wiki/Mars   
+      R1=1835e3
+      R2=3396e3
+      g0=3.72 #https://en.wikipedia.org/wiki/Mars
 
 
    ############################################################################
@@ -885,7 +883,7 @@ match planet:
              bc_fix[i*ndofV+1] = True ; bc_val[i*ndofV+1] = 0
 
    #------------------------
-   case 'BartDisc':
+   case 'MarsDisc':
       for i in range(0,NV):
           #vertical wall x=0
           if axisymmetric and xV[i]/R1<eps:
@@ -1420,7 +1418,12 @@ for istep in range(0,nstep):
     ###############################################################################
     start = timing.time()
 
-    exx2,ezz2,exz2=compute_strain_rate2(nel,mV,NV,iconV,mapping,xmapping,zmapping,u,v)
+    if solve_stokes:
+       exx2,ezz2,exz2=compute_strain_rate2(nel,mV,NV,iconV,mapping,xmapping,zmapping,u,v)
+    else:
+       exx2=np.zeros(NV,dtype=np.float64)  
+       ezz2=np.zeros(NV,dtype=np.float64)  
+       exz2=np.zeros(NV,dtype=np.float64)  
 
     print(spacing+" -> exx2 (m,M) %e %e " %(np.min(exx2),np.max(exx2)))
     print(spacing+" -> ezz2 (m,M) %e %e " %(np.min(ezz2),np.max(ezz2)))
@@ -1461,7 +1464,10 @@ for istep in range(0,nstep):
     ###############################################################################
     start = timing.time()
 
-    q=project_pressure_on_Q2(NV,nel,mV,mP,p,iconP,iconV)
+    if solve_stokes:
+       q=project_pressure_on_Q2(NV,nel,mV,mP,p,iconP,iconV)
+    else:
+       q=np.zeros(NV,dtype=np.float64)  
 
     print(spacing+" -> q (m,M) %e %e " %(np.min(q),np.max(q)))
 
@@ -1481,21 +1487,22 @@ for istep in range(0,nstep):
     e_tt2=np.zeros(NV,dtype=np.float64)  
     e_rt2=np.zeros(NV,dtype=np.float64)  
 
-    for i in range(0,NV):
-        if xV[i]>=0:
-           e_rr2[i]=exx2[i]*np.sin(theta[i])**2+\
-                   2*exz2[i]*np.sin(theta[i])*np.cos(theta[i])+\
-                   ezz2[i]*np.cos(theta[i])**2
-           e_tt2[i]=exx2[i]*np.cos(theta[i])**2-\
-                   2*exz2[i]*np.sin(theta[i])*np.cos(theta[i])+\
-                   ezz2[i]*np.sin(theta[i])**2
-           e_rt2[i]=(exx2[i]-ezz2[i])*np.sin(theta[i])*np.cos(theta[i])+\
-                   exz2[i]*(-np.sin(theta[i])**2+\
-                   np.cos(theta[i])**2)
+    if solve_stokes:
+       for i in range(0,NV):
+           if xV[i]>=0:
+              e_rr2[i]=exx2[i]*np.sin(theta[i])**2+\
+                      2*exz2[i]*np.sin(theta[i])*np.cos(theta[i])+\
+                      ezz2[i]*np.cos(theta[i])**2
+              e_tt2[i]=exx2[i]*np.cos(theta[i])**2-\
+                      2*exz2[i]*np.sin(theta[i])*np.cos(theta[i])+\
+                      ezz2[i]*np.sin(theta[i])**2
+              e_rt2[i]=(exx2[i]-ezz2[i])*np.sin(theta[i])*np.cos(theta[i])+\
+                      exz2[i]*(-np.sin(theta[i])**2+\
+                      np.cos(theta[i])**2)
 
-    print(spacing+" -> e_rr (m,M) %e %e | nel= %d" %(np.min(e_rr2),np.max(e_rr2),nel))
-    print(spacing+" -> e_tt (m,M) %e %e | nel= %d" %(np.min(e_tt2),np.max(e_tt2),nel))
-    print(spacing+" -> e_rt (m,M) %e %e | nel= %d" %(np.min(e_rt2),np.max(e_rt2),nel))
+       print(spacing+" -> e_rr (m,M) %e %e | nel= %d" %(np.min(e_rr2),np.max(e_rr2),nel))
+       print(spacing+" -> e_tt (m,M) %e %e | nel= %d" %(np.min(e_tt2),np.max(e_tt2),nel))
+       print(spacing+" -> e_rt (m,M) %e %e | nel= %d" %(np.min(e_rt2),np.max(e_rt2),nel))
 
     print("compute strain rate in sph. coords........(%.3fs)" % (timing.time() - start))
 
@@ -1591,12 +1598,16 @@ for istep in range(0,nstep):
     ###############################################################################
     start = timing.time()
 
-    errv,errp,vrms=compute_errors(nel,nqel,mapping,xmapping,zmapping,qcoords_r,\
-                                  qcoords_s,qweights,R1,R2,rho_m,g0,u,v,p,\
-                                  axisymmetric,iconV,iconP,total_volume,planet)
+    if solve_stokes:
+       errv,errp,vrms=compute_errors(nel,nqel,mapping,xmapping,zmapping,qcoords_r,\
+                                     qcoords_s,qweights,R1,R2,rho_m,g0,u,v,p,\
+                                     axisymmetric,iconV,iconP,total_volume,planet)
 
-    print(spacing+' -> nelr= %d ; vrms= %.12e' %(nelr,vrms/vel_unit))
-    print(spacing+" -> nelr= %d ; errv= %.12e ; errp= %.14e " %(nelr,errv,errp))
+       print(spacing+' -> nelr= %d ; vrms= %.12e' %(nelr,vrms/vel_unit))
+       print(spacing+" -> nelr= %d ; errv= %.12e ; errp= %.14e " %(nelr,errv,errp))
+
+    else:
+       errv=errp=vrms=0
 
     print("compute errors............................(%.3fs)" % (timing.time() - start))
 
@@ -1664,8 +1675,8 @@ for istep in range(0,nstep):
        print(" compute gravity ")
        print("------------------------------")
 
-       np_grav=48 # nb of satellites positions
-       height=250e3
+       np_grav=25 # nb of satellites positions
+       height=10e3
        print('np_grav=',np_grav)
        print('height=',height/1e3,'km')
 
@@ -1681,7 +1692,7 @@ for istep in range(0,nstep):
 
            start2=timing.time()
 
-           angleM[i]=np.pi/2/(np_grav-1)*i
+           angleM[i]=np.pi/(np_grav-1)*i
            xM[i]=(R2+height)*np.sin(angleM[i])
            zM[i]=(R2+height)*np.cos(angleM[i])
 

@@ -3,11 +3,11 @@ import numpy as np
 from density_Earth import *
 from density_4DEarthBenchmark import *
 from density_AnnulusBenchmark import *
-from density_BartDisc import *
+from density_MarsDisc import *
 from viscosity_Earth import *
 from viscosity_4DEarthBenchmark import *
 from viscosity_Mars import *
-from viscosity_BartDisc import *
+from viscosity_MarsDisc import *
 
 ###############################################################################
 # this function computes the density and viscosity in the middle of the elt.
@@ -51,12 +51,12 @@ def compute_rho_eta_fields(mV,NV,nel,xc,zc,iconV,R1,R2,rho_m,eta_m,eta_model,\
               viscosity_elemental[iel]=1e22
               density_elemental[iel]=4000
 
-           case "BartDisc":
-              viscosity_elemental[iel]=viscosity_BartDisc(xc[iel],zc[iel],R1,R2,etadisc,R1disc,R2disc,thetadisc,\
+           case "MarsDisc":
+              viscosity_elemental[iel]=viscosity_MarsDisc(xc[iel],zc[iel],R1,R2,etadisc,R1disc,R2disc,thetadisc,\
                                                           eta_crust,eta_lithosphere,eta_uppermantle,eta_lowermantle,\
                                                           R_c_l,R_l_um,R_um_lm)
 
-              density_elemental[iel]  =density_BartDisc(xc[iel],zc[iel],R1,R2,rhodisc,R1disc,R2disc,thetadisc,\
+              density_elemental[iel]  =density_MarsDisc(xc[iel],zc[iel],R1,R2,rhodisc,R1disc,R2disc,thetadisc,\
                                                         rho_crust,rho_lithosphere,rho_uppermantle,rho_lowermantle,\
                                                         R_c_l,R_l_um,R_um_lm)
                                                               
