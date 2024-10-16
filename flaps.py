@@ -45,10 +45,10 @@ from constants import *
 
 #planet='Earth'
 #planet='Mars'
-#planet='4DEarthBenchmark'
+planet='4DEarthBenchmark'
 #planet='AnnulusBenchmark'
 #planet='AquariumBenchmark'
-planet='MarsDisc'
+#planet='MarsDisc'
 
 ###############################################################################
 # list of available Earth density and viscosity profiles
@@ -98,37 +98,70 @@ ndofP=1  # number of pressure degrees of freedom
 # reading parameters from command line, or not
 ###############################################################################
 
-if int(len(sys.argv) == 11):
-   nelr        = int(sys.argv[1])
-   visu        = int(sys.argv[2])
-   nqperdim    = int(sys.argv[3])
-   mapping     = int(sys.argv[4])
-   xi          = int(sys.argv[5])
-   etablob     = float(sys.argv[6])
-   rhoblob     = float(sys.argv[7])
-   zblob       = float(sys.argv[8])
-   Rblob       = float(sys.argv[9])
-   etalith     = float(sys.argv[10])
+if int(len(sys.argv) == 24):
+   nelr              = int(sys.argv[1])
+   visu              = int(sys.argv[2])
+   nqperdim          = int(sys.argv[3])
+   mapping           = int(sys.argv[4])
+   xi                = int(sys.argv[5])
+   blob_eta          = float(sys.argv[6])
+   blob_rho          = float(sys.argv[7])
+   blob_z            = float(sys.argv[8])
+   blob_R            = float(sys.argv[9])
+   blob_theta        = float(sys.argv[10])
+   blob_R1           = float(sys.argv[11])
+   blob_R2           = float(sys.argv[12])
+   crust_rho         = float(sys.argv[13])
+   crust_eta         = float(sys.argv[14])
+   crust_depth       = float(sys.argv[15])
+   lithosphere_rho   = float(sys.argv[16])
+   lithosphere_eta   = float(sys.argv[17])
+   lithosphere_depth = float(sys.argv[18])
+   uppermantle_rho   = float(sys.argv[19])
+   uppermantle_eta   = float(sys.argv[20])
+   uppermantle_depth = float(sys.argv[21])
+   lowermantle_rho   = float(sys.argv[22])
+   lowermantle_eta   = float(sys.argv[23])
+
    if mapping==1: mapping='Q1'
    if mapping==2: mapping='Q2'
    if mapping==3: mapping='Q3'
    if mapping==4: mapping='Q4'
    if mapping==5: mapping='Q5'
    if mapping==6: mapping='Q6'
-   etablob=10**etablob
+
+   blob_eta        = 10**blob_eta
+   crust_eta       = 10**crust_eta
+   lithosphere_eta = 10**lithosphere_eta
+   uppermantle_eta = 10**uppermantle_eta
+   lowermantle_eta = 10**lowermantle_eta
+
    print(sys.argv)
 
 else:
-   nelr        = 100 # Q1 cells!
-   visu        = 1
-   nqperdim    = 3
-   mapping     = 'Q2' 
-   xi          = 6
-   etablob     = 1e23
-   rhoblob     = 3900
-   zblob       = 4900e3
-   Rblob       = 400e3
-   etalith     = 1e22
+   nelr              = 64 # Q1 cells!
+   visu              = 1
+   nqperdim          = 3
+   mapping           = 'Q2' 
+   xi                = 6
+   blob_eta          = 1e23 
+   blob_rho          = 3960
+   blob_z            = 4900e3
+   blob_R            = 400e3
+   blob_theta        = 0
+   blob_R1           = 0
+   blob_R2           = 0
+   crust_rho         = 4000 
+   crust_eta         = 1e21
+   crust_depth       = 50e3
+   lithosphere_rho   = 4000
+   lithosphere_eta   = 1e21
+   lithosphere_depth = 100e3
+   uppermantle_rho   = 4000
+   uppermantle_eta   = 1e21
+   uppermantle_depth = 700e3
+   lowermantle_rho   = 4000
+   lowermantle_eta   = 1e21
 
 DJ=False
 
@@ -142,6 +175,11 @@ if mapping=='Q5': mmapping=36
 if mapping=='Q6': mmapping=49
 
 ###########################################################
+
+#NEW
+# projection is n,e,q
+density_projection='q'
+viscosity_projection='n'
 
 match planet:
    case "Earth":
@@ -159,9 +197,8 @@ match planet:
       compute_gravity=False
       self_gravitation=False
       gravity_model=0
-      eta_m=1e21
-      rho_m=4000.
       rho_core=6000
+      nel_phi = 200
    
    case "Mars":
       nstep=1
@@ -178,6 +215,7 @@ match planet:
       compute_gravity=False
       self_gravitation=False
       gravity_model=0
+      nel_phi = 200
          
    case "AnnulusBenchmark":
       nstep=1
@@ -194,9 +232,8 @@ match planet:
       compute_gravity=False
       self_gravitation=False
       gravity_model=0
-      rho_m=1.
-      eta_m=1
       rho_core=0
+      nel_phi = 200
         
    case "AquariumBenchmark":
       nstep=1
@@ -213,9 +250,8 @@ match planet:
       compute_gravity=False
       self_gravitation=False
       gravity_model=0
-      eta_m=1e21
-      rho_m=4000.
       rho_core=6000
+      nel_phi = 200
 
    case "4DEarthBenchmark":
       nstep=1
@@ -232,9 +268,8 @@ match planet:
       compute_gravity=False
       self_gravitation=False
       gravity_model=0
-      eta_m=1e21
-      rho_m=4000.
       rho_core=6000
+      nel_phi = 100
 
    case "MarsDisc":
 
@@ -252,13 +287,11 @@ match planet:
       compute_gravity=True
       self_gravitation=False
       gravity_model=0
-      eta_m=1e22
-      rho_m=3550.
+      #rho_m=3550.
       R1disc=2296e3-100e3
       R2disc=R1disc+235e3
       thetadisc=1700/(3396-1100+100)#np.pi/8
-      rhodisc=rho_m-70
-      etadisc=1e21
+      blob_rho=rho_m-70
       rho_core=8050
       rho_crust=3050       ; eta_crust=1e23
       rho_lithosphere=3550. ; eta_lithosphere=1e23
@@ -267,16 +300,10 @@ match planet:
       R_c_l=3396e3-60e3
       R_l_um=3396e3-83e3
       R_um_lm=2896e3
+      nel_phi = 100
 
    case _:
       exit('pb in flaps setup: unknown planet')
-
-
-###########################################################
-# gravity parameters
-
-self_gravitation=False
-nel_phi     = 2000
 
 ###########################################################
 
@@ -644,6 +671,7 @@ else:
    total_volume=np.pi*(R2**2-R1**2)
 
 print('  -------------------')
+print('  planet=',planet)
 print('  nelr=',nelr,' ; nelt=',nelt,' ; nel=',nel)
 print('  NfemV=',NfemV,' ; NfemP=',NfemP, '; Nfem=',Nfem)
 print('  nqel=',nqel)
@@ -654,11 +682,17 @@ print('  h_r=',h_r)
 print('  eta_model=',eta_model)
 print('  rho_model=',rho_model)
 print('  compute_gravity=',compute_gravity)
-print('  rhoblob=',rhoblob)
-print('  etablob=',etablob)
-print('  Rblob=',Rblob)
-print('  zblob=',zblob)
+print('  blob_rho=',blob_rho)
+print('  blob_eta=',blob_eta)
+print('  blob_R=',blob_R)
+print('  blob_z=',blob_z)
+print('  blob_R1=',blob_R1)
+print('  blob_R2=',blob_R2)
+print('  blob_theta=',blob_theta)
 print('  nel_phi=',nel_phi)
+print('  solve_stokes=',solve_stokes)
+print('  density_projection=',density_projection)
+print('  viscosity_projection=',viscosity_projection)
 print('  -------------------')
 
 print("compute nelr,nelt,nel.....................(%.3fs)" % (timing.time() - start))
@@ -1012,12 +1046,13 @@ for istep in range(0,nstep):
     if istep==0:
 
        density_elemental,density_nodal,viscosity_elemental,viscosity_nodal=\
-       compute_rho_eta_fields(mV,NV,nel,xc,zc,iconV,R1,R2,rho_m,eta_m,eta_model,\
-                              rho_model,rhoblob,etablob,zblob,Rblob,\
-                              rhodisc,etadisc,R1disc,R2disc,thetadisc,
-                              eta_crust,eta_lithosphere,eta_uppermantle,eta_lowermantle,\
-                              rho_crust,rho_lithosphere,rho_uppermantle,rho_lowermantle,\
-                              R_c_l,R_l_um,R_um_lm,planet)
+       compute_rho_eta_fields(mV,NV,nel,xV,zV,xc,zc,iconV,R1,R2,eta_model,rho_model,\
+                              blob_rho,blob_eta,blob_z,blob_R,blob_R1,blob_R2,blob_theta,\
+                              crust_rho,crust_eta,crust_depth,\
+                              lithosphere_rho,lithosphere_eta,lithosphere_depth,\
+                              uppermantle_rho,uppermantle_eta,uppermantle_depth,\
+                              lowermantle_rho,lowermantle_eta,\
+                              planet)
 
        print(spacing+" -> eta_e (m,M) %.2e %.2e " %(np.min(viscosity_elemental),np.max(viscosity_elemental)))
        print(spacing+" -> rho_e (m,M) %.2e %.2e " %(np.min(density_elemental),np.max(density_elemental)))
@@ -1036,13 +1071,14 @@ for istep in range(0,nstep):
     start = timing.time()
 
     area=np.zeros(nel,dtype=np.float64) 
-    vol=np.zeros(nel,dtype=np.float64) 
-    massq  = np.zeros(nel*nqel,dtype=np.float64) 
-    radq  = np.zeros(nel*nqel,dtype=np.float64) 
-    thetaq  = np.zeros(nel*nqel,dtype=np.float64) 
-    zq  = np.zeros(nel*nqel,dtype=np.float64) 
-    rhoq = np.zeros(nel*nqel,dtype=np.float64) 
-    etaq = np.zeros(nel*nqel,dtype=np.float64) 
+    vol_elt=np.zeros(nel,dtype=np.float64) 
+    mass_elt=np.zeros(nel,dtype=np.float64) 
+    radq=np.zeros(nel*nqel,dtype=np.float64) 
+    thetaq=np.zeros(nel*nqel,dtype=np.float64) 
+    zq=np.zeros(nel*nqel,dtype=np.float64) 
+    rhoq=np.zeros(nel*nqel,dtype=np.float64) 
+    massq=np.zeros(nel*nqel,dtype=np.float64) 
+    etaq=np.zeros(nel*nqel,dtype=np.float64) 
 
     counterq=0
     jcb=np.zeros((2,2),dtype=np.float64)
@@ -1077,45 +1113,68 @@ for istep in range(0,nstep):
                jcob = np.linalg.det(jcb)
 
             area[iel]+=jcob*weightq
-            massq[counterq]=density_elemental[iel]*weightq*jcob*2*np.pi*xq
-            if xq>0: vol[iel]+=jcob*weightq*2*np.pi*xq
+            if xq>0: vol_elt[iel]+=jcob*weightq*2*np.pi*xq
 
+
+            #NEW
             ######################################
             #assign density to quadrature points
-            if use_elemental_density:
-               rhoq[counterq]=density_elemental[iel]
-            else:
-               match planet:
-                  case "Earth":
-                     rhoq[counterq]=density_Earth(xq,yq,R1,R2,rho_m,rho_model,\
-                                                  rhoblob,zblob,Rblob)
-                  case "Mars":
-                     rhoq[counterq]=density_Mars(xq,yq,R1,R2,rho_m,rho_model,\
-                                                 rhoblob,zblob,Rblob)
-                  case "4DEarthBenchmark":
-                     rhoq[counterq]=density_4DEarthBenchmark(xq,yq,R1,R2,rho_m,rho_model,\
-                                                             rhoblob,zblob,Rblob)
-                  case "AnnulusBenchmark":
-                     rhoq[counterq]=density_AnnulusBenchmark(xq,yq,R1,R2)
-                  case _:
-                     exit('pb in flaps rhoq: unknown planet')
+            match density_projection:
+               case "e":
+                  rhoq[counterq]=density_elemental[iel]
+               case "q":
+                  match planet:
+                     case "Earth":
+                        rhoq[counterq]=density_Earth(xq,yq,R1,R2,rho_m,rho_model,\
+                                                     blob_rho,blob_z,blob_R)
+                     case "Mars":
+                        rhoq[counterq]=density_Mars(xq,yq,R1,R2,rho_m,rho_model,\
+                                                    blob_rho,blob_z,blob_R)
+                     case "4DEarthBenchmark":
+                        rhoq[counterq]=density_4DEarthBenchmark(xq,yq,R1,R2,crust_rho,lithosphere_rho,\
+                                                                uppermantle_rho,lowermantle_rho,blob_rho,blob_z,blob_R)
+                     case "AnnulusBenchmark":
+                        rhoq[counterq]=density_AnnulusBenchmark(xq,yq,R1,R2)
+                     case _:
+                        exit('pb in flaps rhoq: unknown planet')
 
+               case "n":
+
+                  NNNV=NNN(rq,sq,'Q2')
+                  rhoq[counterq]=np.dot(NNNV[:],density_nodal[iconV[:,iel]])
+
+               case  _ :
+                  exit('pb: unknwon density_projection')
+
+            #NEW
             ######################################
             #assign viscosity to quadrature points
-            if use_elemental_viscosity:
-               etaq[counterq]=viscosity_elemental[iel]
-            else:
-               match planet:
-                  case "Earth":
-                     etaq[counterq]=viscosity_Earth(xq,yq,R1,R2,eta_m,eta_model)
-                  case "Mars":
-                     etaq[counterq]=viscosity_Mars(xq,yq,R1,R2,eta_m,eta_model)
-                  case "4DEarthBenchmark":
-                     etaq[counterq]=viscosity_4DEarth(xq,yq,R1,R2,eta_m,eta_model)
-                  case "AnnulusBenchmark":
-                     etaq[counterq]=1
-                  case _:
-                     exit('pb in flaps etaq: unknown planet')
+            match viscosity_projection:
+               case "e":
+                  etaq[counterq]=viscosity_elemental[iel]
+               case "q":
+                  match planet:
+                     case "Earth":
+                        etaq[counterq]=viscosity_Earth(xq,yq,R1,R2,eta_m,eta_model)
+                     case "Mars":
+                        etaq[counterq]=viscosity_Mars(xq,yq,R1,R2,eta_m,eta_model)
+                     case "4DEarthBenchmark":
+                        etaq[counterq]=viscosity_4DEarthBenchmark(xq,yq,R1,R2,crust_eta,lithosphere_eta,\
+                                                                  uppermantle_eta,lowermantle_eta,blob_eta,blob_z,blob_R)
+                     case "AnnulusBenchmark":
+                        etaq[counterq]=1
+                     case _:
+                        exit('pb in flaps etaq: unknown planet')
+
+               case "n":
+                  NNNV=NNN(rq,sq,'Q2')
+                  etaq[counterq]=np.dot(NNNV[:],viscosity_nodal[iconV[:,iel]])
+
+               case  _  :
+                  exit('pb: unknwon viscosity_projection')
+
+            massq[counterq]=rhoq[counterq]*weightq*jcob*2*np.pi*xq
+            if xq>0: mass_elt[iel]+=massq[counterq]
 
             counterq+=1
        #end for
@@ -1123,7 +1182,7 @@ for istep in range(0,nstep):
 
 
     if axisymmetric:
-       print(spacing+" -> total volume (meas) %.12e | nel= %d" %(vol.sum(),nel))
+       print(spacing+" -> total volume (meas) %.12e | nel= %d" %(vol_elt.sum(),nel))
        print(spacing+" -> total volume (anal) %.12e" %(total_volume))
     else:
        print(spacing+" -> area (m,M) %.6e %.6e " %(np.min(area),np.max(area)))
@@ -1133,7 +1192,8 @@ for istep in range(0,nstep):
     print(spacing+" -> rhoq (m,M) %.3e %.3e " %(np.min(rhoq),np.max(rhoq)))
     print(spacing+" -> etaq (m,M) %.3e %.3e " %(np.min(etaq),np.max(etaq)))
     print(spacing+" -> massq (m,M) %.3e %.3e " %(np.min(massq),np.max(massq)))
-    print(spacing+" -> total mass (meas) %.12e | nel= %d" %(np.sum(density_elemental*vol),nel))
+
+    print(spacing+" -> total mass (meas) %.12e | nel= %d" %(np.sum(mass_elt),nelr))
     
     print("sanity check.............................. %.3fs  | %d" % (timing.time()-start,Nfem))
 
@@ -1233,8 +1293,8 @@ for istep in range(0,nstep):
 
             G_el-=b_mat.T.dot(N_mat)*coeffq
 
-            g_x,g_y=gravity_acceleration(xq,yq,R1,R2,gravity_model,g0,rho_m,\
-                                         rho_core,rhoblob,Rblob,zblob)
+            g_x,g_y=gravity_acceleration(xq,yq,R1,R2,gravity_model,g0,lowermantle_rho,\
+                                         rho_core,blob_rho,blob_R,blob_z)
             for i in range(0,mV):
                 f_el[ndofV*i  ]+=NNNV[i]*coeffq*g_x*rhoq[counterq]
                 f_el[ndofV*i+1]+=NNNV[i]*coeffq*g_y*rhoq[counterq]
@@ -1550,13 +1610,34 @@ for istep in range(0,nstep):
     print("normalise pressure........................(%.3fs)" % (timing.time() - start))
 
     ###############################################################################
+    # compute average pressure at bottom (needed for dyn topo)
+    ###############################################################################
+
+    if not axisymmetric:
+
+       exit('not done')
+
+    else: 
+
+       bottom_p_avrg=0
+       for iel in range(0,nel):
+           if inner_element[iel]:
+              dtheta=theta[iconV[1,iel]]-theta[iconV[0,iel]]
+              pmean=0.5*(p[iconP[0,iel]]+p[iconP[1,iel]])
+              bottom_p_avrg+=np.sin((theta[iconV[0,iel]]+theta[iconV[1,iel]])/2)*dtheta\
+                            *2*np.pi*R1**2*pmean
+       bottom_p_avrg/=4*np.pi*R1**2
+
+    print(spacing+" -> bottom <p> (m,M) %e " %(bottom_p_avrg))
+
+    ###############################################################################
 
     p_th=np.zeros(NP,dtype=np.float64)
     q_th=np.zeros(NV,dtype=np.float64)
     for i in range(0,NP):
-        p_th[i]=pressure(xP[i],zP[i],R1,R2,rho_m,g0,planet)
+        p_th[i]=pressure(xP[i],zP[i],R1,R2,lowermantle_rho,g0,planet)
     for i in range(0,NV):
-        q_th[i]=pressure(xV[i],zV[i],R1,R2,rho_m,g0,planet)
+        q_th[i]=pressure(xV[i],zV[i],R1,R2,lowermantle_rho,g0,planet)
         
     np.savetxt('p_th.ascii',np.array([xP,zP,p_th]).T,header='# x,z,p')
     np.savetxt('q_th.ascii',np.array([xV,zV,q_th]).T,header='# x,z,p')
@@ -1564,14 +1645,15 @@ for istep in range(0,nstep):
     ###############################################################################
     # since I have zeroed the the spherical components of the strain rate for x<0
     # then I also zero the dynamic topography
-    # note that this is only valid for constant viscosity!
     ###############################################################################
     start = timing.time()
 
     dyn_topo_nodal=np.zeros(NV,dtype=np.float64)
     for i in range(0,NV):
         if surfaceV[i] and xV[i]>=0:
-           dyn_topo_nodal[i]= -(2*viscosity_nodal[i]*e_rr2[i]-q[i])/(rho_m*g0) 
+           dyn_topo_nodal[i]= -(2*viscosity_nodal[i]*e_rr2[i]-q[i])/(crust_rho*g0) 
+        if cmbV[i] and xV[i]>=0:
+           dyn_topo_nodal[i]= -(2*viscosity_nodal[i]*e_rr2[i]-(q[i]-bottom_p_avrg))/((lowermantle_rho-rho_core)*g0) 
 
     print("compute dynamic topography................(%.3fs)" % (timing.time() - start))
 
@@ -1582,10 +1664,11 @@ for istep in range(0,nstep):
 
     np.savetxt('qqq_R2_'+str(istep)+'.ascii',np.array([theta[outerQ2],q[outerQ2],q_th[outerQ2]]).T)
     np.savetxt('sr2_R2_'+str(istep)+'.ascii',np.array([theta[outerQ2],sr2[outerQ2]]).T)
-    np.savetxt('vel_R2_'+str(istep)+'.ascii',np.array([theta[outerQ2],vel[outerQ2],vr[outerQ2],vt[outerQ2]]).T)
-    np.savetxt('v_r_R2_'+str(istep)+'.ascii',np.array([theta[outerQ2],vr[outerQ2]]).T)
-    np.savetxt('v_t_R2_'+str(istep)+'.ascii',np.array([theta[outerQ2],vt[outerQ2]]).T)
+    np.savetxt('vel_R2_'+str(istep)+'.ascii',np.array([theta[outerQ2],vel[outerQ2]/vel_unit,vr[outerQ2]/vel_unit,vt[outerQ2]/vel_unit]).T)
+    np.savetxt('v_r_R2_'+str(istep)+'.ascii',np.array([theta[outerQ2],vr[outerQ2]/vel_unit]).T)
+    np.savetxt('v_t_R2_'+str(istep)+'.ascii',np.array([theta[outerQ2],vt[outerQ2]/vel_unit]).T)
     np.savetxt('err_R2_'+str(istep)+'.ascii',np.array([theta[outerQ2],e_rr2[outerQ2]]).T)
+    np.savetxt('d_t_R1_'+str(istep)+'.ascii',np.array([theta[innerQ2],dyn_topo_nodal[innerQ2]]).T)
     np.savetxt('d_t_R2_'+str(istep)+'.ascii',np.array([theta[outerQ2],dyn_topo_nodal[outerQ2]]).T)
     if axisymmetric:
        np.savetxt('sr2_left_'+str(istep)+'.ascii',np.array([xV[leftV],zV[leftV],sr2[leftV],rad[leftV]]).T)
@@ -1600,7 +1683,7 @@ for istep in range(0,nstep):
 
     if solve_stokes:
        errv,errp,vrms=compute_errors(nel,nqel,mapping,xmapping,zmapping,qcoords_r,\
-                                     qcoords_s,qweights,R1,R2,rho_m,g0,u,v,p,\
+                                     qcoords_s,qweights,R1,R2,lowermantle_rho,g0,u,v,p,\
                                      axisymmetric,iconV,iconP,total_volume,planet)
 
        print(spacing+' -> nelr= %d ; vrms= %.12e' %(nelr,vrms/vel_unit))
@@ -1647,10 +1730,10 @@ for istep in range(0,nstep):
     if visu==1:
        export_solution_to_vtu(istep,NV,nel,xV,zV,iconV,u,v,vr,vt,q,vel_unit,rad,\
                               theta,nx,nz,sr1,sr2,sr3,density_nodal,density_elemental,\
-                              viscosity_nodal,viscosity_elemental,R1,R2,rho_m,\
-                              gravity_model,g0,rho_core,rhoblob,Rblob,zblob,hull,\
+                              viscosity_nodal,viscosity_elemental,R1,R2,lowermantle_rho,\
+                              gravity_model,g0,rho_core,blob_rho,blob_R,blob_z,hull,\
                               inner_element,outer_element,innerQ2,outerQ2,bc_fix,\
-                              e_rr2,e_tt2,e_rt2,planet)
+                              e_rr2,e_tt2,e_rt2,vol_elt,mass_elt,planet)
 
     print("export to vtu file........................(%.3fs)" % (timing.time() - start))
 
@@ -1661,6 +1744,9 @@ for istep in range(0,nstep):
        (nelr,np.min(vr)/vel_unit,np.max(vr)/vel_unit))
        print(spacing+" -> 4DEARTH | nelr= %d v_t %.5f %.5f " %\
        (nelr,np.min(vt)/vel_unit,np.max(vt)/vel_unit))
+
+       if density_projection=='e':
+          print(spacing+" -> 4DEARTH | mass_blob",nelr,np.sum(density_elemental[np.where(density_elemental<4000)]*vol_elt[np.where(density_elemental<4000)]))
 
     ###############################################################################
     # M is in (x,z) y=0 plane, so yM=0
@@ -1675,8 +1761,8 @@ for istep in range(0,nstep):
        print(" compute gravity ")
        print("------------------------------")
 
-       np_grav=25 # nb of satellites positions
-       height=10e3
+       np_grav=100 # nb of satellites positions
+       height=1e3
        print('np_grav=',np_grav)
        print('height=',height/1e3,'km')
 

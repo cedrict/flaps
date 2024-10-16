@@ -14,7 +14,7 @@ import numpy as np
 #-------------------R1
 
 #@jit(nopython=True)
-def viscosity_MarsDisc(x,z,R1,R2,etadisc,R1disc,R2disc,thetadisc,\
+def viscosity_MarsDisc(x,z,R1,R2,etablob,R1blob,R2blob,thetablob,\
                        eta_c,eta_l,eta_um,eta_lm,R_c_l,R_l_um,R_um_lm):
     r=np.sqrt(x**2+z**2)
     theta=np.pi/2-np.arctan2(z,x)
@@ -28,8 +28,8 @@ def viscosity_MarsDisc(x,z,R1,R2,etadisc,R1disc,R2disc,thetadisc,\
     else:
        val=eta_lm
 
-    if r>R1disc and r<R2disc and theta<thetadisc:
-       val=etadisc
+    if r>R1blob and r<R2blob and theta<thetablob:
+       val=etablob
   
     return val       
 

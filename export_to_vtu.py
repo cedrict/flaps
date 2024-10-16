@@ -12,7 +12,7 @@ def export_solution_to_vtu(istep,NV,nel,xV,zV,iconV,u,v,vr,vt,q,vel_unit,rad,\
                            theta,nx,nz,sr1,sr2,sr3,density_nodal,density_elemental,\
                            viscosity_nodal,viscosity_elemental,R1,R2,rho_m,gravity_model,\
                            g0,rhoc,rhoblob,Rblob,zblob,hull,inner_element,outer_element,\
-                           innerQ2,outerQ2,bc_fix,e_rr2,e_tt2,e_rt2,planet):
+                           innerQ2,outerQ2,bc_fix,e_rr2,e_tt2,e_rt2,vol_elt,mass_elt,planet):
 
    vtufile=open("solution_"+str(istep)+".vtu","w")
    vtufile.write("<VTKFile type='UnstructuredGrid' version='0.1' byte_order='BigEndian'> \n")
@@ -183,6 +183,20 @@ def export_solution_to_vtu(istep,NV,nel,xV,zV,iconV,u,v,vr,vt,q,vel_unit,rad,\
    for iel in range(0,nel):
        vtufile.write("%e \n" %density_elemental[iel])
    vtufile.write("</DataArray>\n")
+
+   #--
+   vtufile.write("<DataArray type='Float32' Name='volume' Format='ascii'> \n")
+   for iel in range(0,nel):
+       vtufile.write("%e \n" %vol_elt[iel])
+   vtufile.write("</DataArray>\n")
+   #--
+   vtufile.write("<DataArray type='Float32' Name='mass' Format='ascii'> \n")
+   for iel in range(0,nel):
+       vtufile.write("%e \n" %mass_elt[iel])
+   vtufile.write("</DataArray>\n")
+
+
+
    #--
    vtufile.write("<DataArray type='Float32' Name='outer_element' Format='ascii'> \n")
    for iel in range(0,nel):
