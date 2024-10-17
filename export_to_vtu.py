@@ -183,7 +183,6 @@ def export_solution_to_vtu(istep,NV,nel,xV,zV,iconV,u,v,vr,vt,q,vel_unit,rad,\
    for iel in range(0,nel):
        vtufile.write("%e \n" %density_elemental[iel])
    vtufile.write("</DataArray>\n")
-
    #--
    vtufile.write("<DataArray type='Float32' Name='volume' Format='ascii'> \n")
    for iel in range(0,nel):
@@ -194,9 +193,6 @@ def export_solution_to_vtu(istep,NV,nel,xV,zV,iconV,u,v,vr,vt,q,vel_unit,rad,\
    for iel in range(0,nel):
        vtufile.write("%e \n" %mass_elt[iel])
    vtufile.write("</DataArray>\n")
-
-
-
    #--
    vtufile.write("<DataArray type='Float32' Name='outer_element' Format='ascii'> \n")
    for iel in range(0,nel):
@@ -243,7 +239,7 @@ def export_solution_to_vtu(istep,NV,nel,xV,zV,iconV,u,v,vr,vt,q,vel_unit,rad,\
 
 ###############################################################################
 
-def export_quadrature_points_to_vtu(nqperdim,nqel,qcoords_r,qcoords_s,mapping,xmapping,ymapping):
+def export_elt_quadrature_points_to_vtu(nqperdim,nqel,qcoords_r,qcoords_s,mapping,xmapping,ymapping):
 
    vtufile=open("quadrature_points_"+str(nqperdim)+".vtu","w")
    vtufile.write("<VTKFile type='UnstructuredGrid' version='0.1' byte_order='BigEndian'> \n")
@@ -465,3 +461,53 @@ def export_slices(nel_phi,NV,nel,r,theta,iconV,rho):
         vtufile.close()
 
 ###############################################################################
+
+def export_quadrature_points_to_vtu(nq,coords_xq,coords_zq,rhoq,etaq):
+
+   vtufile=open("quadrature_points.vtu","w")
+   vtufile.write("<VTKFile type='UnstructuredGrid' version='0.1' byte_order='BigEndian'> \n")
+   vtufile.write("<UnstructuredGrid> \n")
+   vtufile.write("<Piece NumberOfPoints='%5d' NumberOfCells='%5d'> \n" %(nq,nq))
+   #####
+   vtufile.write("<Points> \n")
+   vtufile.write("<DataArray type='Float32' NumberOfComponents='3' Format='ascii'> \n")
+   for k in range(0,nq):
+       vtufile.write("%e %e %e \n" %(coords_xq[k],coords_zq[k],0.))
+   vtufile.write("</DataArray>\n")
+   vtufile.write("</Points> \n")
+   #####
+   vtufile.write("<PointData Scalars='scalars'>\n")
+   vtufile.write("<DataArray type='Float32' Name='density' Format='ascii'> \n")
+   for i in range(0,nq):
+       vtufile.write("%e \n" %(rhoq[i]))
+   vtufile.write("</DataArray>\n")
+   vtufile.write("<DataArray type='Float32' Name='viscosity' Format='ascii'> \n")
+   for i in range(0,nq):
+       vtufile.write("%e \n" %(etaq[i]))
+   vtufile.write("</DataArray>\n")
+   vtufile.write("</PointData>\n")
+   #####
+   vtufile.write("<Cells>\n")
+   #--
+   vtufile.write("<DataArray type='Int32' Name='connectivity' Format='ascii'> \n")
+   for iel in range (0,nq):
+       vtufile.write("%d \n" %(iel))
+   vtufile.write("</DataArray>\n")
+   #--
+   vtufile.write("<DataArray type='Int32' Name='offsets' Format='ascii'> \n")
+   for iel in range (0,nq):
+       vtufile.write("%d \n" %((iel+1)*1))
+   vtufile.write("</DataArray>\n")
+   #--
+   vtufile.write("<DataArray type='Int32' Name='types' Format='ascii'>\n")
+   for iel in range (0,nq):
+       vtufile.write("%d \n" %1)
+   vtufile.write("</DataArray>\n")
+   #--
+   vtufile.write("</Cells>\n")
+   #####
+   vtufile.write("</Piece>\n")
+   vtufile.write("</UnstructuredGrid>\n")
+   vtufile.write("</VTKFile>\n")
+   vtufile.close()
+

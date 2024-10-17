@@ -1021,7 +1021,7 @@ for istep in range(0,nstep):
     if debug:
        np.savetxt('xzmapping'+mapping+'.ascii',np.array([xmapping[0,:],zmapping[0,:]]).T)
        export_mapping_points_to_vtu(mapping,mmapping,xmapping,zmapping)
-       export_quadrature_points_to_vtu(nqperdim,nqel,qcoords_r,qcoords_s,mapping,\
+       export_elt_quadrature_points_to_vtu(nqperdim,nqel,qcoords_r,qcoords_s,mapping,\
                                        xmapping,zmapping)
 
     print("define mapping............................(%.3fs)" % (timing.time() - start))
@@ -1075,10 +1075,11 @@ for istep in range(0,nstep):
     mass_elt=np.zeros(nel,dtype=np.float64) 
     radq=np.zeros(nel*nqel,dtype=np.float64) 
     thetaq=np.zeros(nel*nqel,dtype=np.float64) 
-    zq=np.zeros(nel*nqel,dtype=np.float64) 
     rhoq=np.zeros(nel*nqel,dtype=np.float64) 
     massq=np.zeros(nel*nqel,dtype=np.float64) 
     etaq=np.zeros(nel*nqel,dtype=np.float64) 
+    coords_xq=np.zeros(nel*nqel,dtype=np.float64) 
+    coords_zq=np.zeros(nel*nqel,dtype=np.float64) 
 
     counterq=0
     jcb=np.zeros((2,2),dtype=np.float64)
@@ -1102,10 +1103,11 @@ for istep in range(0,nstep):
                dNNNVdr=dNNNdr(rq,sq,mapping)
                dNNNVds=dNNNds(rq,sq,mapping)
                xq=np.dot(NNNV[:],xmapping[:,iel])
-               yq=np.dot(NNNV[:],zmapping[:,iel])
-               zq[counterq]=yq
-               radq[counterq]=np.sqrt(xq**2+yq**2)
-               thetaq[counterq]=np.pi/2-np.arctan2(yq,xq)
+               zq=np.dot(NNNV[:],zmapping[:,iel])
+               coords_xq[counterq]=xq
+               coords_zq[counterq]=zq
+               radq[counterq]=np.sqrt(xq**2+zq**2)
+               thetaq[counterq]=np.pi/2-np.arctan2(zq,xq)
                jcb[0,0]=np.dot(dNNNVdr[:],xmapping[:,iel])
                jcb[0,1]=np.dot(dNNNVdr[:],zmapping[:,iel])
                jcb[1,0]=np.dot(dNNNVds[:],xmapping[:,iel])
@@ -1125,16 +1127,16 @@ for istep in range(0,nstep):
                case "q":
                   match planet:
                      case "Earth":
-                        rhoq[counterq]=density_Earth(xq,yq,R1,R2,rho_m,rho_model,\
+                        rhoq[counterq]=density_Earth(xq,zq,R1,R2,rho_m,rho_model,\
                                                      blob_rho,blob_z,blob_R)
                      case "Mars":
-                        rhoq[counterq]=density_Mars(xq,yq,R1,R2,rho_m,rho_model,\
+                        rhoq[counterq]=density_Mars(xq,zq,R1,R2,rho_m,rho_model,\
                                                     blob_rho,blob_z,blob_R)
                      case "4DEarthBenchmark":
-                        rhoq[counterq]=density_4DEarthBenchmark(xq,yq,R1,R2,crust_rho,lithosphere_rho,\
+                        rhoq[counterq]=density_4DEarthBenchmark(xq,zq,R1,R2,crust_rho,lithosphere_rho,\
                                                                 uppermantle_rho,lowermantle_rho,blob_rho,blob_z,blob_R)
                      case "AnnulusBenchmark":
-                        rhoq[counterq]=density_AnnulusBenchmark(xq,yq,R1,R2)
+                        rhoq[counterq]=density_AnnulusBenchmark(xq,zq,R1,R2)
                      case _:
                         exit('pb in flaps rhoq: unknown planet')
 
@@ -1155,11 +1157,11 @@ for istep in range(0,nstep):
                case "q":
                   match planet:
                      case "Earth":
-                        etaq[counterq]=viscosity_Earth(xq,yq,R1,R2,eta_m,eta_model)
+                        etaq[counterq]=viscosity_Earth(xq,zq,R1,R2,eta_m,eta_model)
                      case "Mars":
-                        etaq[counterq]=viscosity_Mars(xq,yq,R1,R2,eta_m,eta_model)
+                        etaq[counterq]=viscosity_Mars(xq,zq,R1,R2,eta_m,eta_model)
                      case "4DEarthBenchmark":
-                        etaq[counterq]=viscosity_4DEarthBenchmark(xq,yq,R1,R2,crust_eta,lithosphere_eta,\
+                        etaq[counterq]=viscosity_4DEarthBenchmark(xq,zq,R1,R2,crust_eta,lithosphere_eta,\
                                                                   uppermantle_eta,lowermantle_eta,blob_eta,blob_z,blob_R)
                      case "AnnulusBenchmark":
                         etaq[counterq]=1
@@ -1196,6 +1198,12 @@ for istep in range(0,nstep):
     print(spacing+" -> total mass (meas) %.12e | nel= %d" %(np.sum(mass_elt),nelr))
     
     print("sanity check.............................. %.3fs  | %d" % (timing.time()-start,Nfem))
+
+    ###############################################################################
+
+    np.savetxt('qpoints.ascii',np.array([coords_xq,coords_zq,rhoq,etaq]).T,header='# x,y,rho,eta')
+
+    export_quadrature_points_to_vtu(nel*nqel,coords_xq,coords_zq,rhoq,etaq)
 
     ###############################################################################
     # build FE matrix
@@ -1237,10 +1245,10 @@ for istep in range(0,nstep):
             #compute coords of quadrature points
             NNNV=NNN(rq,sq,mapping)
             xq=np.dot(NNNV[:],xmapping[:,iel])
-            yq=np.dot(NNNV[:],zmapping[:,iel])
-            #zq[counterq]=yq
-            #radq[counterq]=np.sqrt(xq**2+yq**2)
-            #thetaq[counterq]=np.pi/2-np.arctan2(yq,xq)
+            zq=np.dot(NNNV[:],zmapping[:,iel])
+            #zq[counterq]=zq
+            #radq[counterq]=np.sqrt(xq**2+zq**2)
+            #thetaq[counterq]=np.pi/2-np.arctan2(zq,xq)
 
             #compute jacobian matrix
             dNNNVdr=dNNNdr(rq,sq,mapping)
@@ -1293,7 +1301,7 @@ for istep in range(0,nstep):
 
             G_el-=b_mat.T.dot(N_mat)*coeffq
 
-            g_x,g_y=gravity_acceleration(xq,yq,R1,R2,gravity_model,g0,lowermantle_rho,\
+            g_x,g_y=gravity_acceleration(xq,zq,R1,R2,gravity_model,g0,lowermantle_rho,\
                                          rho_core,blob_rho,blob_R,blob_z)
             for i in range(0,mV):
                 f_el[ndofV*i  ]+=NNNV[i]*coeffq*g_x*rhoq[counterq]
