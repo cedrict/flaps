@@ -19,9 +19,7 @@ def compute_gravity_at_point(xM,zM,nel,nqel,zq,radq,thetaq,massq,nel_phi):
                for jel in range(0,nel_phi):
                    x_c=factq*np.cos(jel*dphi)
                    y_c=factq*np.sin(jel*dphi)
-
-                   #print(x_c,y_c,zq[counterq])
-
+                   #print(x_c,y_c,xM,zM,zq[counterq])
                    dist32=((xM-x_c)**2 + y_c**2 + (zM-zq[counterq])**2)**1.5
                    Kernel=Ggrav/dist32*massq[counterq]
                    gx-= Kernel*(xM-x_c)

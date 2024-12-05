@@ -45,10 +45,10 @@ from constants import *
 
 #planet='Earth'
 #planet='Mars'
-planet='4DEarthBenchmark'
+#planet='4DEarthBenchmark'
 #planet='AnnulusBenchmark'
 #planet='AquariumBenchmark'
-#planet='MarsDisc'
+planet='MarsDisc'
 
 ###############################################################################
 # list of available Earth density and viscosity profiles
@@ -139,7 +139,7 @@ if int(len(sys.argv) == 24):
    print(sys.argv)
 
 else:
-   nelr              = 64 # Q1 cells!
+   nelr              = 128 # Q1 cells!
    visu              = 1
    nqperdim          = 3
    mapping           = 'Q2' 
@@ -179,7 +179,7 @@ if mapping=='Q6': mmapping=49
 #NEW
 # projection is n,e,q
 density_projection='q'
-viscosity_projection='n'
+viscosity_projection='e'
 
 match planet:
    case "Earth":
@@ -187,15 +187,12 @@ match planet:
       dt=50*year
       solve_stokes=True
       axisymmetric=True
-      use_elemental_density=True
-      use_elemental_viscosity=True
       eta_ref=1e21
       vel_unit=0.01/year
       velunit='cm/year'
       surface_free_slip=True
       bottom_free_slip=False 
       compute_gravity=False
-      self_gravitation=False
       gravity_model=0
       rho_core=6000
       nel_phi = 200
@@ -205,15 +202,12 @@ match planet:
       dt=50*year
       solve_stokes=True
       axisymmetric=True
-      use_elemental_density=True
-      use_elemental_viscosity=True
       eta_ref=1e21
       vel_unit=0.01/year
       velunit='cm/year'
       surface_free_slip=True
       bottom_free_slip=False 
       compute_gravity=False
-      self_gravitation=False
       gravity_model=0
       nel_phi = 200
          
@@ -222,15 +216,12 @@ match planet:
       dt=0
       solve_stokes=True
       axisymmetric=False
-      use_elemental_density=False
-      use_elemental_viscosity=False
       eta_ref=1
       vel_unit=1
       velunit=' '
       surface_free_slip=False
       bottom_free_slip=False
       compute_gravity=False
-      self_gravitation=False
       gravity_model=0
       rho_core=0
       nel_phi = 200
@@ -240,15 +231,12 @@ match planet:
       dt=50*year
       solve_stokes=True
       axisymmetric=True
-      use_elemental_density=True
-      use_elemental_viscosity=True
       eta_ref=1e21
       vel_unit=0.01/year
       velunit='cm/year'
       surface_free_slip=True
       bottom_free_slip=False 
       compute_gravity=False
-      self_gravitation=False
       gravity_model=0
       rho_core=6000
       nel_phi = 200
@@ -258,15 +246,12 @@ match planet:
       dt=50*year
       solve_stokes=True
       axisymmetric=True
-      use_elemental_density=True
-      use_elemental_viscosity=True
       eta_ref=1e21
       vel_unit=0.01/year
       velunit='cm/year'
       surface_free_slip=True
       bottom_free_slip=False 
       compute_gravity=False
-      self_gravitation=False
       gravity_model=0
       rho_core=6000
       nel_phi = 100
@@ -275,35 +260,41 @@ match planet:
 
       nstep=1
       dt=50*year
-      solve_stokes=False
+      solve_stokes=True
       axisymmetric=True
-      use_elemental_density=True
-      use_elemental_viscosity=True
       eta_ref=1e21
       vel_unit=0.01/year
       velunit='cm/year'
       surface_free_slip=True
       bottom_free_slip=False 
-      compute_gravity=True
-      self_gravitation=False
+      compute_gravity=False
       gravity_model=0
-      #rho_m=3550.
-      R1disc=2296e3-100e3
-      R2disc=R1disc+235e3
-      thetadisc=1700/(3396-1100+100)#np.pi/8
-      blob_rho=rho_m-70
       rho_core=8050
-      rho_crust=3050       ; eta_crust=1e23
-      rho_lithosphere=3550. ; eta_lithosphere=1e23
-      rho_uppermantle=3550. ; eta_uppermantle=6e20
-      rho_lowermantle=3550. ; eta_lowermantle=1e21
-      R_c_l=3396e3-60e3
-      R_l_um=3396e3-83e3
-      R_um_lm=2896e3
-      nel_phi = 100
+      nel_phi = 50
+
+      crust_rho         = 3050 
+      crust_eta         = 1e23
+      crust_depth       = 60e3
+
+      lithosphere_rho   = 3550
+      lithosphere_eta   = 1e23
+      lithosphere_depth = 83e3
+
+      uppermantle_rho   = lithosphere_rho
+      uppermantle_eta   = 6e20
+      uppermantle_depth = 700e3 
+
+      lowermantle_rho   = 3550 
+      lowermantle_eta   = 1e21
+
+      blob_R1           = 2296e3-100e3
+      blob_R2           = blob_R1+235e3
+      blob_theta        = 1700./(3396-1100+100) #np.pi/8
+      blob_rho          = lowermantle_rho-70 
+      blob_eta          = 1e21
 
    case _:
-      exit('pb in flaps setup: unknown planet')
+      exit('pb1 in flaps setup: unknown planet')
 
 ###########################################################
 
@@ -355,7 +346,7 @@ match planet:
          viscA_civs12[:]=np.flip(viscA_civs12)
          viscB_civs12[:]=np.flip(viscB_civs12)
 
-         np.savetxt('civs12.ascii',np.array([depths_civs12,viscA_civs12,viscB_civs12]).T)
+         np.savetxt('civs12.ascii',np.array([depths_civs12,viscA_civs12,viscB_civs12]).T,fmt='%1.4e')
 
          print('     -> read eta_civs12.ascii ok') 
 
@@ -382,7 +373,7 @@ match planet:
          depths_stho08[:]=np.flip(depths_stho08)
          visc_stho08[:]=np.flip(visc_stho08)
 
-         np.savetxt('stho08.ascii',np.array([depths_stho08,visc_stho08]).T)
+         np.savetxt('stho08.ascii',np.array([depths_stho08,visc_stho08]).T,fmt='%1.4e')
 
          print('     -> read eta_stho08.ascii ok')
 
@@ -402,7 +393,7 @@ match planet:
          depth_ak135f[:]*=1000
          rho_ak135f[:]*=1000
 
-         np.savetxt('density_ak135f.ascii',np.array([depth_ak135f,rho_ak135f]).T)
+         np.savetxt('density_ak135f.ascii',np.array([depth_ak135f,rho_ak135f]).T,fmt='%1.4e')
 
          print('     -> read rho_ak135f.ascii ok')
 
@@ -424,7 +415,7 @@ match planet:
          depth_stw105[:]=np.flip(depth_stw105)
          rho_stw105[:]=np.flip(rho_stw105)
 
-         np.savetxt('density_stw105.ascii',np.array([depth_stw105,rho_stw105]).T)
+         np.savetxt('density_stw105.ascii',np.array([depth_stw105,rho_stw105]).T,fmt='%1.4e')
 
          print('     -> read rho_stw105.ascii ok')
 
@@ -597,7 +588,7 @@ else:
            counter+=1
 
    if debug:
-      np.savetxt('grid.ascii',np.array([xV,zV,theta]).T,header='# x,y')
+      np.savetxt('grid.ascii',np.array([xV,zV,theta]).T,header='# x,y',fmt='%1.4e')
 
 print("coordinate arrays.........................(%.3fs)" % (timing.time() - start))
 
@@ -848,10 +839,6 @@ for iel in range(0,nel):
        innerQ2[iconV[1,iel]]=True
        innerQ2[iconV[4,iel]]=True
 
-if axisymmetric:
-   leftV=np.zeros(NV,dtype=bool) 
-   for i in range(0,NV):
-       if xV[i]<eps and zV[i]>0: leftV[i]=True
 
 print("flag surf and cmb nodes+elts..............(%.3fs)" % (timing.time() - start))
 
@@ -868,7 +855,7 @@ nx,nz=compute_normals(normal_type,NV,xV,zV,mV,nqel,surfaceV,hull,\
 
 if debug:
    np.savetxt('normals.ascii',np.array([xV[surfaceV],zV[surfaceV],\
-                                        nx[surfaceV],nz[surfaceV],theta[surfaceV]]).T)
+                                        nx[surfaceV],nz[surfaceV],theta[surfaceV]]).T,fmt='%1.4e')
 
 print("compute surface normals...................(%.3fs)" % (timing.time() - start))
 
@@ -1019,7 +1006,7 @@ for istep in range(0,nstep):
     print(spacing+" -> zmapping (m,M) %.2e %.2e " %(np.min(zmapping),np.max(zmapping)))
 
     if debug:
-       np.savetxt('xzmapping'+mapping+'.ascii',np.array([xmapping[0,:],zmapping[0,:]]).T)
+       np.savetxt('xzmapping'+mapping+'.ascii',np.array([xmapping[0,:],zmapping[0,:]]).T,fmt='%1.4e')
        export_mapping_points_to_vtu(mapping,mmapping,xmapping,zmapping)
        export_elt_quadrature_points_to_vtu(nqperdim,nqel,qcoords_r,qcoords_s,mapping,\
                                        xmapping,zmapping)
@@ -1060,7 +1047,7 @@ for istep in range(0,nstep):
        print(spacing+" -> rho_n (m,M) %.2e %.2e " %(np.min(density_nodal),np.max(density_nodal)))
 
     if debug:
-       np.savetxt('xycenter'+mapping+'.ascii',np.array([xc,yc,density_elemental,viscosity_elemental]).T)
+       np.savetxt('xycenter'+mapping+'.ascii',np.array([xc,yc,density_elemental,viscosity_elemental]).T,fmt='%1.4e')
 
     print("compute rho+eta fields....................(%.3fs)" % (timing.time() - start))
 
@@ -1137,8 +1124,18 @@ for istep in range(0,nstep):
                                                                 uppermantle_rho,lowermantle_rho,blob_rho,blob_z,blob_R)
                      case "AnnulusBenchmark":
                         rhoq[counterq]=density_AnnulusBenchmark(xq,zq,R1,R2)
+
+                     case "MarsDisc":
+                        rhoq[counterq]=density_MarsDisc(xq,zq,R1,R2,\
+                                                        blob_rho,blob_z,blob_R,blob_R1,blob_R2,blob_theta,\
+                                                        crust_rho,crust_depth,\
+                                                        lithosphere_rho,lithosphere_depth,\
+                                                        uppermantle_rho,uppermantle_depth,\
+                                                        lowermantle_rho)
+
+
                      case _:
-                        exit('pb in flaps rhoq: unknown planet')
+                        exit('pb2 in flaps rhoq: unknown planet')
 
                case "n":
 
@@ -1146,7 +1143,7 @@ for istep in range(0,nstep):
                   rhoq[counterq]=np.dot(NNNV[:],density_nodal[iconV[:,iel]])
 
                case  _ :
-                  exit('pb: unknwon density_projection')
+                  exit('pb3 in flaps: unknown density_projection')
 
             #NEW
             ######################################
@@ -1166,14 +1163,14 @@ for istep in range(0,nstep):
                      case "AnnulusBenchmark":
                         etaq[counterq]=1
                      case _:
-                        exit('pb in flaps etaq: unknown planet')
+                        exit('pb4 in flaps etaq: unknown planet')
 
                case "n":
                   NNNV=NNN(rq,sq,'Q2')
                   etaq[counterq]=np.dot(NNNV[:],viscosity_nodal[iconV[:,iel]])
 
                case  _  :
-                  exit('pb: unknwon viscosity_projection')
+                  exit('pb5: unknown viscosity_projection')
 
             massq[counterq]=rhoq[counterq]*weightq*jcob*2*np.pi*xq
             if xq>0: mass_elt[iel]+=massq[counterq]
@@ -1201,7 +1198,8 @@ for istep in range(0,nstep):
 
     ###############################################################################
 
-    np.savetxt('qpoints.ascii',np.array([coords_xq,coords_zq,rhoq,etaq]).T,header='# x,y,rho,eta')
+    if debug:
+       np.savetxt('qpoints.ascii',np.array([coords_xq,coords_zq,rhoq,etaq]).T,header='# x,y,rho,eta',fmt='%1.4e')
 
     export_quadrature_points_to_vtu(nel*nqel,coords_xq,coords_zq,rhoq,etaq)
 
@@ -1246,9 +1244,6 @@ for istep in range(0,nstep):
             NNNV=NNN(rq,sq,mapping)
             xq=np.dot(NNNV[:],xmapping[:,iel])
             zq=np.dot(NNNV[:],zmapping[:,iel])
-            #zq[counterq]=zq
-            #radq[counterq]=np.sqrt(xq**2+zq**2)
-            #thetaq[counterq]=np.pi/2-np.arctan2(zq,xq)
 
             #compute jacobian matrix
             dNNNVdr=dNNNdr(rq,sq,mapping)
@@ -1439,8 +1434,8 @@ for istep in range(0,nstep):
     p=sol[NfemV:NfemV+NfemP]*eta_ref/h_r
 
     if debug:
-       np.savetxt('velocity.ascii',np.array([xV,zV,u/vel_unit,v/vel_unit]).T,header='# x,y,u,v')
-       np.savetxt('pressure.ascii',np.array([xP,zP,p]).T,header='# x,y,p')
+       np.savetxt('velocity.ascii',np.array([xV,zV,u/vel_unit,v/vel_unit]).T,header='# x,y,u,v',fmt='%1.4e')
+       np.savetxt('pressure.ascii',np.array([xP,zP,p]).T,header='# x,y,p',fmt='%1.4e')
  
     vr= np.sin(theta)*u+np.cos(theta)*v
     vt= np.cos(theta)*u-np.sin(theta)*v
@@ -1476,8 +1471,8 @@ for istep in range(0,nstep):
 
        sr1=np.zeros(NV,dtype=np.float64)  
        sr1[:]=np.sqrt(0.5*(exx1[:]**2+ezz1[:]**2)+exz1[:]**2)
-       np.savetxt('sr1_R1.ascii',np.array([xV[innerQ2],zV[innerQ2],sr1[innerQ2],theta[innerQ2]]).T)
-       np.savetxt('sr1_R2.ascii',np.array([xV[outerQ2],zV[outerQ2],sr1[outerQ2],theta[outerQ2]]).T)
+       np.savetxt('sr1_R1.ascii',np.array([xV[innerQ2],zV[innerQ2],sr1[innerQ2],theta[innerQ2]]).T,fmt='%1.4e')
+       np.savetxt('sr1_R2.ascii',np.array([xV[outerQ2],zV[outerQ2],sr1[outerQ2],theta[outerQ2]]).T,fmt='%1.4e')
 
     print("compute strain rate meth-1................(%.3fs)" % (timing.time() - start))
 
@@ -1501,7 +1496,7 @@ for istep in range(0,nstep):
     sr2[:]=np.sqrt(0.5*(exx2[:]**2+ezz2[:]**2)+exz2[:]**2)
 
     if debug:
-       np.savetxt('strainrate'+str(istep)+'.ascii',np.array([xV,zV,exx2,ezz2,exz2]).T)
+       np.savetxt('strainrate'+str(istep)+'.ascii',np.array([xV,zV,exx2,ezz2,exz2]).T,fmt='%1.4e')
 
     print("compute strain rate meth-2................(%.3fs)" % (timing.time() - start))
 
@@ -1522,8 +1517,8 @@ for istep in range(0,nstep):
        print(spacing+" -> exz3 (m,M) %e %e " %(np.min(exz3),np.max(exz3)))
 
        sr3[:]=np.sqrt(0.5*(exx3[:]**2+ezz3[:]**2)+exz3[:]**2)
-       np.savetxt('sr3_R1.ascii',np.array([xV[0:nnt],zV[0:nnt],sr3[0:nnt],theta[0:nnt]]).T)
-       np.savetxt('sr3_R2.ascii',np.array([xV[outerQ2],zV[outerQ2],sr3[outerQ2],theta[outerQ2]]).T)
+       np.savetxt('sr3_R1.ascii',np.array([xV[0:nnt],zV[0:nnt],sr3[0:nnt],theta[0:nnt]]).T,fmt='%1.4e')
+       np.savetxt('sr3_R2.ascii',np.array([xV[outerQ2],zV[outerQ2],sr3[outerQ2],theta[outerQ2]]).T,fmt='%1.4e')
 
     print("compute strain rate meth-3................(%.3fs)" % (timing.time() - start))
 
@@ -1540,7 +1535,7 @@ for istep in range(0,nstep):
     print(spacing+" -> q (m,M) %e %e " %(np.min(q),np.max(q)))
 
     if debug:
-       np.savetxt('pressure'+str(istep)+'.ascii',np.array([xV,zV,q]).T)
+       np.savetxt('pressure'+str(istep)+'.ascii',np.array([xV,zV,q]).T,fmt='%1.4e')
 
     print("project pressure onto Q2 mesh.............(%.3fs)" % (timing.time() - start))
 
@@ -1612,8 +1607,8 @@ for istep in range(0,nstep):
     print(spacing+" -> p (m,M) %e %e " %(np.min(p),np.max(p)))
     print(spacing+" -> q (m,M) %e %e " %(np.min(q),np.max(q)))
 
-    #if debug: 
-    np.savetxt('pressure.ascii',np.array([xP,zP,p]).T,header='# x,z,p')
+    if debug: 
+       np.savetxt('pressure.ascii',np.array([xP,zP,p]).T,header='# x,z,p',fmt='%1.4e')
 
     print("normalise pressure........................(%.3fs)" % (timing.time() - start))
 
@@ -1646,9 +1641,11 @@ for istep in range(0,nstep):
         p_th[i]=pressure(xP[i],zP[i],R1,R2,lowermantle_rho,g0,planet)
     for i in range(0,NV):
         q_th[i]=pressure(xV[i],zV[i],R1,R2,lowermantle_rho,g0,planet)
-        
-    np.savetxt('p_th.ascii',np.array([xP,zP,p_th]).T,header='# x,z,p')
-    np.savetxt('q_th.ascii',np.array([xV,zV,q_th]).T,header='# x,z,p')
+    
+    if debug:    
+       np.savetxt('p_th.ascii',np.array([xP,zP,p_th]).T,header='# x,z,p',fmt='%1.4e')
+       np.savetxt('q_th.ascii',np.array([xV,zV,q_th]).T,header='# x,z,p',fmt='%1.4e')
+       np.savetxt('q_th_R2.ascii',np.array([theta[outerQ2],q_th[outerQ2]]).T,fmt='%1.4e')
 
     ###############################################################################
     # since I have zeroed the the spherical components of the strain rate for x<0
@@ -1670,17 +1667,19 @@ for istep in range(0,nstep):
     ###############################################################################
     start = timing.time()
 
-    np.savetxt('qqq_R2_'+str(istep)+'.ascii',np.array([theta[outerQ2],q[outerQ2],q_th[outerQ2]]).T)
-    np.savetxt('sr2_R2_'+str(istep)+'.ascii',np.array([theta[outerQ2],sr2[outerQ2]]).T)
-    np.savetxt('vel_R2_'+str(istep)+'.ascii',np.array([theta[outerQ2],vel[outerQ2]/vel_unit,vr[outerQ2]/vel_unit,vt[outerQ2]/vel_unit]).T)
-    np.savetxt('v_r_R2_'+str(istep)+'.ascii',np.array([theta[outerQ2],vr[outerQ2]/vel_unit]).T)
-    np.savetxt('v_t_R2_'+str(istep)+'.ascii',np.array([theta[outerQ2],vt[outerQ2]/vel_unit]).T)
-    np.savetxt('err_R2_'+str(istep)+'.ascii',np.array([theta[outerQ2],e_rr2[outerQ2]]).T)
-    np.savetxt('d_t_R1_'+str(istep)+'.ascii',np.array([theta[innerQ2],dyn_topo_nodal[innerQ2]]).T)
-    np.savetxt('d_t_R2_'+str(istep)+'.ascii',np.array([theta[outerQ2],dyn_topo_nodal[outerQ2]]).T)
-    if axisymmetric:
-       np.savetxt('sr2_left_'+str(istep)+'.ascii',np.array([xV[leftV],zV[leftV],sr2[leftV],rad[leftV]]).T)
-       np.savetxt('vel_left_'+str(istep)+'.ascii',np.array([xV[leftV],zV[leftV],vel[leftV],rad[leftV]]).T)
+    np.savetxt('qqq_R1_'+str(istep)+'.ascii',np.array([theta[innerQ2],q[innerQ2]]).T,fmt='%1.6e')
+    np.savetxt('qqq_R2_'+str(istep)+'.ascii',np.array([theta[outerQ2],q[outerQ2]]).T,fmt='%1.6e')
+    np.savetxt('sr2_R2_'+str(istep)+'.ascii',np.array([theta[outerQ2],sr2[outerQ2]]).T,fmt='%1.4e')
+    np.savetxt('vel_R2_'+str(istep)+'.ascii',np.array([theta[outerQ2],vel[outerQ2]/vel_unit,vr[outerQ2]/vel_unit,vt[outerQ2]/vel_unit]).T,fmt='%1.4e')
+    np.savetxt('err_R2_'+str(istep)+'.ascii',np.array([theta[outerQ2],e_rr2[outerQ2]]).T,fmt='%1.4e')
+    np.savetxt('d_t_R1_'+str(istep)+'.ascii',np.array([theta[innerQ2],dyn_topo_nodal[innerQ2]]).T,fmt='%1.4e')
+    np.savetxt('d_t_R2_'+str(istep)+'.ascii',np.array([theta[outerQ2],dyn_topo_nodal[outerQ2]]).T,fmt='%1.4e')
+    #if axisymmetric:
+    #   leftV=np.zeros(NV,dtype=bool) 
+    #   for i in range(0,NV):
+    #       if xV[i]<eps and zV[i]>0: leftV[i]=True
+    #   np.savetxt('sr2_left_'+str(istep)+'.ascii',np.array([xV[leftV],zV[leftV],sr2[leftV],rad[leftV]]).T,fmt='%1.4e')
+    #   np.savetxt('vel_left_'+str(istep)+'.ascii',np.array([xV[leftV],zV[leftV],vel[leftV],rad[leftV]]).T,fmt='%1.4e')
 
     print("export p&q on R1,R2.......................(%.3fs)" % (timing.time() - start))
 
@@ -1707,6 +1706,8 @@ for istep in range(0,nstep):
     ###############################################################################
     start = timing.time()
 
+    self_gravitation=False
+
     if self_gravitation:
 
        g_x=np.zeros(NP,dtype=np.float64)   
@@ -1722,7 +1723,7 @@ for istep in range(0,nstep):
 
        gnorm[:]=np.sqrt(g_x[:]**2+g_y[:]**2+g_z[:]**2)
 
-       np.savetxt('gravity_self.ascii',np.array([xP,zP,g_x,g_y,g_z,gnorm]).T)
+       np.savetxt('gravity_self.ascii',np.array([xP,zP,g_x,g_y,g_z,gnorm]).T,fmt='%1.4e')
 
        print(spacing+"     -> g_x (m,M) %.4e %.4e " %(np.min(g_x),np.max(g_x)))
        print(spacing+"     -> g_y (m,M) %.4e %.4e " %(np.min(g_y),np.max(g_y)))
@@ -1748,13 +1749,13 @@ for istep in range(0,nstep):
     ###############################################################################
 
     if planet=='4DEarthBenchmark':
-       print(spacing+" -> 4DEARTH | nelr= %d v_r %.5f %.5f " %\
+       print(spacing+" -> DTGbenchmark | nelr= %d v_r %.5f %.5f " %\
        (nelr,np.min(vr)/vel_unit,np.max(vr)/vel_unit))
-       print(spacing+" -> 4DEARTH | nelr= %d v_t %.5f %.5f " %\
+       print(spacing+" -> DTGbenchmark | nelr= %d v_t %.5f %.5f " %\
        (nelr,np.min(vt)/vel_unit,np.max(vt)/vel_unit))
 
        if density_projection=='e':
-          print(spacing+" -> 4DEARTH | mass_blob",nelr,np.sum(density_elemental[np.where(density_elemental<4000)]*vol_elt[np.where(density_elemental<4000)]))
+          print(spacing+" -> DTGbenchmark | mass_blob",nelr,np.sum(density_elemental[np.where(density_elemental<4000)]*vol_elt[np.where(density_elemental<4000)]))
 
     ###############################################################################
     # M is in (x,z) y=0 plane, so yM=0
@@ -1791,7 +1792,7 @@ for istep in range(0,nstep):
            zM[i]=(R2+height)*np.cos(angleM[i])
 
            gvect_x[i],gvect_y[i],gvect_z[i]=\
-           compute_gravity_at_point(xM[i],zM[i],nel,nqel,zq,radq,thetaq,massq,nel_phi)
+           compute_gravity_at_point(xM[i],zM[i],nel,nqel,coords_zq,radq,thetaq,massq,nel_phi)
 
            tend2=timing.time()
            print("point ",i,"/",np_grav,\
@@ -1808,16 +1809,16 @@ for istep in range(0,nstep):
        print('     -> gvect_z (m,M):',min(gvect_z),max(gvect_z))
        print('     -> gnorm   (m,M):',min(gnorm),  max(gnorm  ))
 
-       gnorm_th=Ggrav*4*np.pi/3*(R2**3-R1**3)*rho_m/(R2+height)**2
+       gnorm_th=1 #Ggrav*4*np.pi/3*(R2**3-R1**3)*rho_m/(R2+height)**2
        print('     -> grav (th)',gnorm_th)
    
        print("compute gravity (%.3fs)" % (timing.time() - start))
 
        gravfile1='gravity_{:04d}.ascii'.format(istep)
        np.savetxt(gravfile1,np.array([xM,zM,rM,angleM,gvect_x,gvect_y,gvect_z,\
-                  gnorm,abs(gnorm-gnorm_th)/gnorm_th]).T,fmt='%.10e',\
+                  gnorm,abs(gnorm-gnorm_th)/gnorm_th]).T,\
                   header='1:xM, 2:zM, 3:rM, 4:angleM, 5:gvect_x, 6:gvect_y,\
-                           7:gvect_z, 8:gvect, 9:error')
+                           7:gvect_z, 8:gvect, 9:error',fmt='%1.4e')
 
        if istep==0: 
           gnorm0=np.zeros(np_grav,dtype=np.float64)   
@@ -1825,7 +1826,7 @@ for istep in range(0,nstep):
        else:
           gnorm_rate=(gnorm-gnorm0)/dt/mGal*year
           np.savetxt('gravity_rate.ascii',np.array([angleM,gnorm_rate]).T,\
-                  header='1:angleM, 2:gnorm_rate')
+                  header='1:angleM, 2:gnorm_rate',fmt='%1.4e')
 
           print("gnorm rate (m/M)",min(gnorm_rate),max(gnorm_rate),' mGal/year')
 
@@ -1849,7 +1850,7 @@ for istep in range(0,nstep):
     if nstep>1:
 
        if debug:
-          np.savetxt('grid_before_advection_{:04d}.ascii'.format(istep),np.array([xV,zV]).T,header='# x,y')
+          np.savetxt('grid_before_advection_{:04d}.ascii'.format(istep),np.array([xV,zV]).T,header='# x,y',fmt='%1.4e')
 
        for i in range(0,NV): 
            if not surfaceV[i]:
@@ -1867,8 +1868,8 @@ for istep in range(0,nstep):
            zP[iconP[3,iel]]=zV[iconV[3,iel]]
 
        if debug:
-          np.savetxt('grid_after_advection_{:04d}.ascii'.format(istep),np.array([xV,zV]).T,header='# x,y')
-          np.savetxt('grid_distortion_{:04d}.ascii'.format(istep),np.array([xV,zV,u*dt,v*dt]).T,header='# x,y')
+          np.savetxt('grid_after_advection_{:04d}.ascii'.format(istep),np.array([xV,zV]).T,header='# x,y',fmt='%1.4e')
+          np.savetxt('grid_distortion_{:04d}.ascii'.format(istep),np.array([xV,zV,u*dt,v*dt]).T,header='# x,y',fmt='%1.4e')
 
     print("advection step............................(%.3fs)" % (timing.time() - start))
 

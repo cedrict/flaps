@@ -55,21 +55,29 @@ def compute_rho_eta_fields(mV,NV,nel,xV,zV,xc,zc,iconV,R1,R2,eta_model,rho_model
               density_elemental[iel]=4000
 
            case "MarsDisc":
-              viscosity_elemental[iel]=viscosity_MarsDisc(xc[iel],zc[iel],R1,R2,blob_eta,blob_R1,blob_R2,blob_theta,\
-                                                          crust_eta,lithosphere_eta,uppermantle_eta,lowermantle_eta,\
-                                                          crust_depth,lithosphere_depth,uppermantle_depth)
+              viscosity_elemental[iel]=viscosity_MarsDisc(xc[iel],zc[iel],R1,R2,\
+                                                          blob_eta,blob_z,blob_R,blob_R1,blob_R2,blob_theta,\
+                                                          crust_eta,crust_depth,\
+                                                          lithosphere_eta,lithosphere_depth,\
+                                                          uppermantle_eta,uppermantle_depth,\
+                                                          lowermantle_eta)
+                                                              
 
-              density_elemental[iel]  =density_MarsDisc(xc[iel],zc[iel],R1,R2,blob_rho,blob_R1,blob_R2,blob_theta,\
-                                                        crust_rho,lithosphere_rho,uppermantle_rho,lowermantle_rho,\
-                                                        crust_depth,lithosphere_depth,uppermantle_depth)
+
+              density_elemental[iel]=density_MarsDisc(xc[iel],zc[iel],R1,R2,\
+                                                      blob_rho,blob_z,blob_R,blob_R1,blob_R2,blob_theta,\
+                                                      crust_rho,crust_depth,\
+                                                      lithosphere_rho,lithosphere_depth,\
+                                                      uppermantle_rho,uppermantle_depth,\
+                                                      lowermantle_rho)
                                                               
            case _:
-              exit('pb in compute_rho_eta_fields: unknown planet')
+              exit('pb1 in compute_rho_eta_fields: unknown planet')
 
     #end for
 
     ######################
-    # elemental quantities
+    # nodal quantities
 
     viscosity_nodal=np.zeros(NV,dtype=np.float64)
     density_nodal=np.zeros(NV,dtype=np.float64)
@@ -82,8 +90,24 @@ def compute_rho_eta_fields(mV,NV,nel,xV,zV,xc,zc,iconV,R1,R2,eta_model,rho_model
                                                             uppermantle_eta,lowermantle_eta,blob_eta,blob_z,blob_R)
               density_nodal[i]=density_4DEarthBenchmark(xV[i],zV[i],R1,R2,crust_rho,lithosphere_rho,\
                                                         uppermantle_rho,lowermantle_rho,blob_rho,blob_z,blob_R)
+
+           case "MarsDisc":
+              viscosity_nodal[i]=viscosity_MarsDisc(xV[i],zV[i],R1,R2,\
+                                                    blob_eta,blob_z,blob_R,blob_R1,blob_R2,blob_theta,\
+                                                    crust_eta,crust_depth,\
+                                                    lithosphere_eta,lithosphere_depth,\
+                                                    uppermantle_eta,uppermantle_depth,\
+                                                    lowermantle_eta)
+
+              density_nodal[i]=density_MarsDisc(xV[i],zV[i],R1,R2,\
+                                                blob_rho,blob_z,blob_R,blob_R1,blob_R2,blob_theta,\
+                                                crust_rho,crust_depth,\
+                                                lithosphere_rho,lithosphere_depth,\
+                                                uppermantle_rho,uppermantle_depth,\
+                                                lowermantle_rho)
+
            case _:
-              exit('pb in compute_rho_eta_fields: unknown planet')
+              exit('pb2 in compute_rho_eta_fields: unknown planet')
 
     #end for
 
