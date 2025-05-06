@@ -1,0 +1,21 @@
+
+################# 
+# SAFE/DEBUG MODE
+################# 
+FLAGS   = -c  -fbounds-check -fcheck=all -ffree-line-length-none  -Wall -Wno-unused-dummy-argument -pg -g
+
+################# 
+# FAST MODE
+################# 
+#FLAGS= -c -O5 -ffree-line-length-none
+
+F90      = gfortran
+F77      = gfortran
+
+LIBS = \
+-lblas
+
+INCLUDE = \
+
+OPTIONS = 
+

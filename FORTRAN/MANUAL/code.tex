@@ -1,0 +1,44 @@
+ \subsection{allocate\_mesh\_arrays}
+ this subroutine allocates the mesh variable to the nel size 
+ and estimates how much memory the mesh is going to take.
+ \subsection{NNN}
+ Basis functions ${\bN}_i$. Spaces supported: $Q_1$, $Q_2$.
+ \subsection{dNNNdr}
+ Basis functions derivatives $\partial{\bN}_i/\partial r$. Spaces supported: $Q_1$, $Q_2$.
+ \subsection{dNNNds}
+ Basis functions derivatives $\partial{\bN}_i/\partial s$. Spaces supported: $Q_1$, $Q_2$.
+ \subsection{compute\_dNdx\_dNdz\_at\_qpt.f90}
+ This subroutine computes $\partial{\bN}/\partial \{x,z\}$, 
+ at a quadrature point iq (between 1 and nqel)) passed as argument.
+ It also returns the determinant jcob of the Jacobian matrix.
+ \subsection{compute\_normals}
+
+ \subsection{geometry\_setup}
+
+ \subsection{output\_qpoints}
+ This subroutine exports all quadrature points (and the fields they carry)
+ in a vtu file in the OUTPUT folder.
+ \subsection{output\_solution\_to\_ascii}
+ This subroutine export the nodal fields to the file {solution.ascii} in the OUTPUT folder.
+ \subsection{output\_solution\_to\_vtu}
+ This subroutine exports the solution field and derivatives in vtu format in a file found in 
+ the OUTPUT folder. 
+ \subsection{quadrature\_setup.f90}
+ This subroutine computes/fills all quadrature-related arrays for each element.
+ It further computes the real coordinates $(x_q,y_q,z_q)$ and reduced 
+ coordinates $(r_q,s_q,t_q)$ of these points, and assigns them their weights.
+ The required constants for the quadrature schemes are in 
+ {\filenamefont module\_quadrature.f90}.
+ Note that JxWq only receives Wq and will be multiplied by J in the sanity subroutine.
+ \subsection{setup\_A}
+ Matrix A is the assembled FE matrix.
+ If the geometry is {\tt 'box'} or {\tt 'chunk'} the number of nonzeros in the matrix and 
+ its sparsity  structure are computed in a very efficient way. 
+ \subsection{template}
+
+ \subsection{test\_basis\_functions}
+ This subroutine tests the consistency of the basis functions. 
+ An analytical velocity field is prescribed (constant, linear or quadratic) and the 
+ corresponding values are computed onto the quadrature points via the 
+ (derivatives of the) basis functions.
+ It generates three ascii files in the {\foldernamefont OUTPUT} folder.
