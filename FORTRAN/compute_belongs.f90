@@ -1,7 +1,7 @@
 !==================================================================================================!
 !==================================================================================================!
 !                                                                                                  !
-! ELEFANT                                                                        C. Thieulot       !
+! FLAPS                                                                                            ! 
 !                                                                                                  !
 !==================================================================================================!
 !==================================================================================================!
@@ -21,17 +21,15 @@ integer(int32) :: inode,i,iV,iP
 !==================================================================================================!
 !==================================================================================================!
 !@@ \subsection{compute\_belongs}
-!@@ This subroutine allocates and fills the {\sl U,V,Wnode\_belongs\_to} and {\sl Pnode\_belongs\_to} 
-!@@ arrays. For a given Unode {\sl ip},
-!@@ {\sl Unode\_belongs\_to(1,ip)} is the number of elements that {\sl ip} belongs to.
-!@@ Furthermore, {\sl Unode\_belongs\_to(2:9,ip)} is the actual list of elements.
+!@@ This subroutine allocates and fills the {\sl Vnode\_belongs\_to} and {\sl Pnode\_belongs\_to} 
+!@@ arrays. For a given Vnode {\sl ip}, {\sl Vnode\_belongs\_to(1,ip)} is the number of elements 
+!@@ that {\sl ip} belongs to.
+!@@ Furthermore, {\sl Unode\_belongs\_to(2:5,ip)} is the actual list of the four elements.
 !==================================================================================================!
 
 call tic() 
 
 !==============================================================================!
-
-
 
 write(*,'(a,i5)') shift//'NV=',NV
 
@@ -49,15 +47,15 @@ do iel=1,nel
    end do
 end do
 
+print *,minval(Vnode_belongs_to(1,:)),maxval(Vnode_belongs_to(1,:))
+
 !----------------------------------------------------------
 
-allocate(Pnode_belongs_to(5,NV)) ; Pnode_belongs_to=0
+allocate(Pnode_belongs_to(5,NP)) ; Pnode_belongs_to=0
 
 do iel=1,nel
-   !print *,'elt:',iel
    do i=1,mP
       inode=mesh(iel)%iconP(i)
-      !print *,'->',inode
       Pnode_belongs_to(1,inode)=Pnode_belongs_to(1,inode)+1
       if (Pnode_belongs_to(1,inode)>5) then
          print *, 'compute_belongs: Pnode_belongs_to array too small'
@@ -66,6 +64,8 @@ do iel=1,nel
       Pnode_belongs_to(1+Pnode_belongs_to(1,inode),inode)=iel
    end do
 end do
+
+print *,minval(Pnode_belongs_to(1,:)),maxval(Pnode_belongs_to(1,:))
 
 !-----------------------------------------------------------------------------!
 

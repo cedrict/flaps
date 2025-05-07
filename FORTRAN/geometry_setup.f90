@@ -62,14 +62,14 @@ do j=1,nelr
    do i=1,nelt
       counter=counter+1
       mesh(counter)%iconV(1)=(i-1)*2+1+(j-1)*2*nnt
-      mesh(counter)%iconV(2)=(i-1)*2+2+(j-1)*2*nnt
-      mesh(counter)%iconV(3)=(i-1)*2+3+(j-1)*2*nnt
-      mesh(counter)%iconV(4)=(i-1)*2+1+(j-1)*2*nnt+nnt
-      mesh(counter)%iconV(5)=(i-1)*2+2+(j-1)*2*nnt+nnt
+      mesh(counter)%iconV(5)=(i-1)*2+2+(j-1)*2*nnt
+      mesh(counter)%iconV(2)=(i-1)*2+3+(j-1)*2*nnt
+      mesh(counter)%iconV(8)=(i-1)*2+1+(j-1)*2*nnt+nnt
+      mesh(counter)%iconV(9)=(i-1)*2+2+(j-1)*2*nnt+nnt
       mesh(counter)%iconV(6)=(i-1)*2+3+(j-1)*2*nnt+nnt
-      mesh(counter)%iconV(7)=(i-1)*2+1+(j-1)*2*nnt+nnt*2
-      mesh(counter)%iconV(8)=(i-1)*2+2+(j-1)*2*nnt+nnt*2
-      mesh(counter)%iconV(9)=(i-1)*2+3+(j-1)*2*nnt+nnt*2
+      mesh(counter)%iconV(4)=(i-1)*2+1+(j-1)*2*nnt+nnt*2
+      mesh(counter)%iconV(7)=(i-1)*2+2+(j-1)*2*nnt+nnt*2
+      mesh(counter)%iconV(3)=(i-1)*2+3+(j-1)*2*nnt+nnt*2
 
       ! node 1
       r=R1+(j-1)*(R2-R1)/nelr ; theta=pi/2-(i-1)*pi/nelt

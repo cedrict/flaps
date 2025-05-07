@@ -31,7 +31,7 @@ call write_params
 call spacer
 call assign_material_properties_to_qpoints
 call output_qpoints
-call make_matrix_stokes
+!call make_matrix_stokes
 call output_solution_to_vtu
 call output_solution_to_ascii
 call postprocess
