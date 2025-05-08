@@ -18,7 +18,7 @@ use module_timing
 
 implicit none
 
-integer(int32):: ip,jp,i,j,k,i1,i2,j1,j2,k1,k2,nsees,nz
+integer(int32):: ip,jp,i,j,k,i1,i2,j1,j2,k1,k2,nsees,nz,inode,jnode,idof,jdof,irow,jcol
 logical, dimension(:), allocatable :: alreadyseen
 
 !==================================================================================================!
@@ -33,39 +33,40 @@ call tic()
 
 csrK%N=NfemV
 
-write(*,'(a,i11,a)') shift//'csrK%N       =',csrK%N,' '
+write(*,'(a,i11,a)') shift//'csrK%N=',csrK%N,' '
 
 !----------------------------------------------------------
 ! compute NZ
+! I here only compute NZ assuming there is only 1 dof 
+! per node. I then multiply this number by ndofV^2 to 
+! get the correct number.
 !----------------------------------------------------------
 
 call cpu_time(t3)
 allocate(alreadyseen(NV))
 NZ=0
 
-!xx,xy,xz
-do ip=1,NV
+do inode=1,NV
    alreadyseen=.false.
-   do k=1,Vnode_belongs_to(1,ip)
-      iel=Vnode_belongs_to(1+k,ip)
-      !-------- 
+   do k=1,Vnode_belongs_to(1,inode)
+      iel=Vnode_belongs_to(1+k,inode)
       do i=1,mV
-         jp=mesh(iel)%iconV(i)
-         if (.not.alreadyseen(jp)) then
+         jnode=mesh(iel)%iconV(i)
+         if (.not.alreadyseen(jnode)) then
             NZ=NZ+1
-            alreadyseen(jp)=.true.
+            alreadyseen(jnode)=.true.
          end if
       end do
    end do
 end do
 
-print *,'1dof NZ=',NZ
+write(*,'(a,i7)') shift//'NZ (ndof=1)=',NZ
 
 NZ=NZ*ndofV**2
 
 csrK%NZ=NZ
 
-print *,'NZ=',NZ
+write(*,'(a,i7)') shift//'NZ (ndof=2)=',NZ
 
 deallocate(alreadyseen)
 call cpu_time(t4)
@@ -86,40 +87,46 @@ allocate(alreadyseen(2*NV))
 NZ=0
 csrK%ia(1)=1
 
-do ip=1,NV
-   nsees=0
-   alreadyseen=.false.
-   do k=1,Vnode_belongs_to(1,ip)
-      iel=Vnode_belongs_to(1+k,ip)
-      !-------- 
-      do i=1,mV
-         jp=mesh(iel)%iconV(i)
-         if (.not.alreadyseen(jp)) then
-            NZ=NZ+1
-            csrK%ja(NZ)=jp
-            nsees=nsees+1
-            alreadyseen(jp)=.true.
-         end if
+do inode=1,NV                            ! loop over V nodes
+   do idof=1,ndofV                       ! loop over dofs on node
+      irow=ndofV*(inode-1)+idof          ! row in K matrix
+      nsees=0
+      alreadyseen(:)=.false.
+      !print *,'--------------------'
+      do k=1,Vnode_belongs_to(1,inode)   ! loop over elts to which inode belongs
+         iel=Vnode_belongs_to(1+k,inode)
+         do i=1,mV                       ! loop over nodes of element iel
+            jnode=mesh(iel)%iconV(i)
+            !print *,jnode
+            do jdof=1,ndofV
+               jcol=ndofV*(jnode-1)+jdof ! column in K matrix
+
+               if (.not.alreadyseen(jcol)) then
+                  NZ=NZ+1
+                  csrK%ja(NZ)=jcol
+                  nsees=nsees+1
+                  alreadyseen(jcol)=.true.
+               end if
+            end do
+
+         end do
       end do
-      !-------- 
-      do i=1,mV
-         jp=mesh(iel)%iconV(i)+NV
-         if (.not.alreadyseen(jp)) then
-            NZ=NZ+1
-            csrK%ja(NZ)=jp
-            nsees=nsees+1
-            alreadyseen(jp)=.true.
-         end if
-      end do
+      !print *,'irow=',irow,'nsees:',nsees
+      csrK%ia(irow+1)=csrK%ia(irow)+nsees
    end do
-   csrK%ia(ip+1)=csrK%ia(ip)+nsees
 end do
 
-print *,csrK%ia
+!print *,NZ
+!print *,csrK%ia
+!print *,csrK%ja
 
+deallocate(alreadyseen)    
 
+call cpu_time(t4) ; write(*,'(a,f10.3,a)') shift//'ia,ja time:',t4-t3,'s'
 
-
+write(*,'(a,i9)' ) shift//'NZ=',NZ
+write(*,'(a,2i9)') shift//'csrK%ia',minval(csrK%ia), maxval(csrK%ia)
+write(*,'(a,2i9)') shift//'csrK%ja',minval(csrK%ja), maxval(csrK%ja)
 
 !==============================================================================!
 

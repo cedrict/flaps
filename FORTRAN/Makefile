@@ -25,8 +25,8 @@ output_qpoints.o\
 output_solution_to_ascii.o\
 output_solution_to_vtu.o\
 quadrature_setup.o\
-sanity_check.o\
 setup_matrix_K.o\
+sanity_check.o\
 test_basis_functions.o\
 flaps.o
 
